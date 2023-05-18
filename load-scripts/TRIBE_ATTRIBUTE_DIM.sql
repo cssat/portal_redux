@@ -1,0 +1,25 @@
+-- create TRIBE_ATTRIBUTE_DIM table
+
+-- DROP TABLE portal_redux.TRIBE_ATTRIBUTE_DIM;
+CREATE TABLE portal_redux.TRIBE_ATTRIBUTE_DIM (
+	ID_TRIBE_ATTRIBUTE_DIM int NOT NULL,
+	CD_PRSN_TRB_RESPONSE int NULL,
+	TX_PRSN_TRB_RESPONSE varchar(200) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CD_PRSN_TRB_STATUS int NULL,
+	TX_PRSN_TRB_STATUS varchar(200) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	DT_ROW_BEGIN datetime NULL,
+	DT_ROW_END datetime NULL,
+	ID_CYCLE int NULL,
+	IS_CURRENT int NULL,
+	CONSTRAINT PK_TRIBE_ATTRIBUTE_DIM PRIMARY KEY (ID_TRIBE_ATTRIBUTE_DIM)
+);
+
+-- load table data
+
+BULK INSERT portal_redux.TRIBE_ATTRIBUTE_DIM
+FROM 'D:\S3\fldw-in\TRIBE_ATTRIBUTE_DIM.TXT'
+WITH (
+    firstrow = 2,
+    fieldterminator = '|',
+    rowterminator = '\n'
+);

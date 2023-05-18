@@ -1,0 +1,25 @@
+-- create RELATIONSHIP_DIM table
+
+-- DROP TABLE portal_redux.RELATIONSHIP_DIM;
+CREATE TABLE portal_redux.RELATIONSHIP_DIM (
+	ID_RELATIONSHIP_DIM int NOT NULL,
+	CD_RLTNSHP_VCTM int NULL,
+	TX_RLTNSHP_VCTM varchar(200) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CD_TPR_RELATIONSHIP int NULL,
+	TX_TPR_RELATIONSHIP varchar(200) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	DT_ROW_BEGIN datetime NULL,
+	DT_ROW_END datetime NULL,
+	ID_CYCLE int NULL,
+	IS_CURRENT int NULL,
+	CONSTRAINT pk_ID_RELATIONSHIP_DIM PRIMARY KEY (ID_RELATIONSHIP_DIM)
+);
+
+-- load table data
+
+BULK INSERT portal_redux.RELATIONSHIP_DIM
+FROM 'D:\S3\fldw-in\RELATIONSHIP_DIM.TXT'
+WITH (
+    firstrow = 2,
+    fieldterminator = '|',
+    rowterminator = '\n'
+);
