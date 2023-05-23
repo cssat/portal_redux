@@ -29,7 +29,7 @@ CREATE TABLE portal_redux.LICENSE_ATTRIB_DIM (
 -- load table data
 
 BULK INSERT portal_redux.LICENSE_ATTRIB_DIM
-FROM 'D:\S3\fldw-in\LICENSE_ATTRIB_DIM.TXT'
+FROM 'D:\S3\fldw-in\LICENSE_ATTRIB_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

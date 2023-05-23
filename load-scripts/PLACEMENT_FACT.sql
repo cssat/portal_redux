@@ -55,7 +55,7 @@ CREATE TABLE portal_redux.PLACEMENT_FACT (
 -- load table data
 
 BULK INSERT portal_redux.PLACEMENT_FACT
-FROM 'D:\S3\fldw-in\PLACEMENT_FACT.TXT'
+FROM 'D:\S3\fldw-in\PLACEMENT_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

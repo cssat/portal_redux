@@ -32,7 +32,7 @@ CREATE TABLE portal_redux.LOCATION_DIM (
 -- load table data
 
 BULK INSERT portal_redux.LOCATION_DIM
-FROM 'D:\S3\fldw-in\LOCATION_DIM.TXT'
+FROM 'D:\S3\fldw-in\LOCATION_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

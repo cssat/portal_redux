@@ -24,7 +24,7 @@ CREATE TABLE portal_redux.LICENSE_ACTION_FACT (
 -- load table data
 
 BULK INSERT portal_redux.LICENSE_ACTION_FACT
-FROM 'D:\S3\fldw-in\LICENSE_ACTION_FACT.TXT'
+FROM 'D:\S3\fldw-in\LICENSE_ACTION_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

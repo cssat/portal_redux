@@ -27,7 +27,7 @@ CREATE TABLE portal_redux.PRIMARY_ASSIGNMENT_FACT (
 -- load table data
 
 BULK INSERT portal_redux.PRIMARY_ASSIGNMENT_FACT
-FROM 'D:\S3\fldw-in\PRIMARY_ASSIGNMENT_FACT.TXT'
+FROM 'D:\S3\fldw-in\PRIMARY_ASSIGNMENT_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

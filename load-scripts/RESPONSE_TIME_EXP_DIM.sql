@@ -15,7 +15,7 @@ CREATE TABLE portal_redux.RESPONSE_TIME_EXP_DIM (
 -- load table data
 
 BULK INSERT portal_redux.RESPONSE_TIME_EXP_DIM
-FROM 'D:\S3\fldw-in\RESPONSE_TIME_EXP_DIM.TXT'
+FROM 'D:\S3\fldw-in\RESPONSE_TIME_EXP_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

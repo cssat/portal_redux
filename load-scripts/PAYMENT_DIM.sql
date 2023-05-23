@@ -15,7 +15,7 @@ CREATE TABLE portal_redux.PAYMENT_DIM (
 -- load table data
 
 BULK INSERT portal_redux.PAYMENT_DIM
-FROM 'D:\S3\fldw-in\PAYMENT_DIM.TXT'
+FROM 'D:\S3\fldw-in\PAYMENT_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',
