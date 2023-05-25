@@ -31,7 +31,7 @@ CREATE TABLE portal_redux.INVESTIGATION_ASSESSMENT_FACT (
 -- load table data
 
 BULK INSERT portal_redux.INVESTIGATION_ASSESSMENT_FACT
-FROM 'D:\S3\fldw-in\INVESTIGATIVE_ASSESSMENT_FACT.txt'
+FROM 'D:\S3\fldw-in\INVESTIGATION_ASSESSMENT_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',
