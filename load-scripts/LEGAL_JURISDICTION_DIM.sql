@@ -15,7 +15,7 @@ CREATE TABLE portal_redux.LEGAL_JURISDICTION_DIM (
 -- load table data
 
 BULK INSERT portal_redux.LEGAL_JURISDICTION_DIM
-FROM 'D:\S3\fldw-in\LEGAL_JURISDICTION_DIM.TXT'
+FROM 'D:\S3\fldw-in\LEGAL_JURISDICTION_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

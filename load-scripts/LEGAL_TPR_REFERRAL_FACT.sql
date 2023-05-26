@@ -19,7 +19,7 @@ CREATE TABLE portal_redux.LEGAL_TPR_REFERRAL_FACT (
 -- load table data
 
 BULK INSERT portal_redux.LEGAL_TPR_REFERRAL_FACT
-FROM 'D:\S3\fldw-in\LEGAL_TPR_REFERRAL_FACT.TXT'
+FROM 'D:\S3\fldw-in\LEGAL_TPR_REFERRAL_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

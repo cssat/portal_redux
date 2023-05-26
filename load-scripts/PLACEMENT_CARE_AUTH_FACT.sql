@@ -21,7 +21,7 @@ CREATE TABLE portal_redux.PLACEMENT_CARE_AUTH_FACT (
 -- load table data
 
 BULK INSERT portal_redux.PLACEMENT_CARE_AUTH_FACT
-FROM 'D:\S3\fldw-in\PLACEMENT_CARE_AUTH_FACT.TXT'
+FROM 'D:\S3\fldw-in\PLACEMENT_CARE_AUTH_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

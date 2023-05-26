@@ -18,7 +18,7 @@ CREATE TABLE portal_redux.TRIBE_DIM (
 -- load table data
 
 BULK INSERT portal_redux.TRIBE_DIM
-FROM 'D:\S3\fldw-in\TRIBE_DIM.TXT'
+FROM 'D:\S3\fldw-in\TRIBE_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

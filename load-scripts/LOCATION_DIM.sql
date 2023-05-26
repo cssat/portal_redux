@@ -23,8 +23,7 @@ CREATE TABLE portal_redux.LOCATION_DIM (
 	DT_ROW_END datetime NULL,
 	ID_CYCLE int NULL,
 	IS_CURRENT int NULL,
-	zip_5 varchar(5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-	CD_CITY_TYPE varchar(1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CD_CITY_TYPE varchar(3) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	TX_CITY_TYPE varchar(200) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	CONSTRAINT PK_LOCATION_DIM PRIMARY KEY (ID_LOCATION_DIM)
 );
@@ -32,7 +31,7 @@ CREATE TABLE portal_redux.LOCATION_DIM (
 -- load table data
 
 BULK INSERT portal_redux.LOCATION_DIM
-FROM 'D:\S3\fldw-in\LOCATION_DIM.TXT'
+FROM 'D:\S3\fldw-in\LOCATION_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

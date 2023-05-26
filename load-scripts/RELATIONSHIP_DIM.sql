@@ -17,7 +17,7 @@ CREATE TABLE portal_redux.RELATIONSHIP_DIM (
 -- load table data
 
 BULK INSERT portal_redux.RELATIONSHIP_DIM
-FROM 'D:\S3\fldw-in\RELATIONSHIP_DIM.TXT'
+FROM 'D:\S3\fldw-in\RELATIONSHIP_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',
