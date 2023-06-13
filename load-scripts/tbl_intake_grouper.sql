@@ -83,7 +83,4 @@ and not exists (select id_intake_fact from #intakes intk where intk.id_intake_fa
 alter table portal_redux.tbl_intake_grouper CHECK CONSTRAINT ALL;
 
 update statistics portal_redux.tbl_intake_grouper;
-
-update portal_redux.procedure_flow
-set last_run_date=getdate()
-where procedure_nm='prod_build_tbl_intake_grouper';
+end

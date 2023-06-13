@@ -1,6 +1,6 @@
 -- create ia_trends_cache table
 
--- DROP TABLE portal_redux.ia_trends_cache;
+ DROP TABLE portal_redux.ia_trends_cache;
 CREATE TABLE portal_redux.ia_trends_cache (
     row_id INT NOT NULL,
     qry_type TINYINT NOT NULL,
@@ -52,8 +52,6 @@ GO
 
 -- populate ia_trends_cache table
 
-CREATE PROCEDURE portal_redux.[build_ia_trends_cache]
-AS
 TRUNCATE TABLE portal_redux.ia_trends_cache
 
 IF EXISTS (
@@ -132,13 +130,13 @@ FROM (SELECT
     RAND() [x1],
     RAND() [x2]
 FROM portal_redux.ia_trends ia
-INNER JOIN ref.match_age_sib_group_cd masg ON masg.age_sib_group_match_code = ia.cd_sib_age_group
-INNER JOIN ref.match_cd_race_census mrc ON mrc.race_census_match_code = ia.cd_race_census
-INNER JOIN ref.match_cd_county mc ON mc.county_match_code = ia.county_cd
-INNER JOIN ref.match_cd_reporter_type mrt ON mrt.reporter_type_match_code = ia.cd_reporter_type
-INNER JOIN ref.match_cd_access_type mat ON mat.filter_access_type = ia.filter_access_type
-INNER JOIN ref.match_allegation ma ON ma.filter_allegation = ia.filter_allegation
-INNER JOIN ref.match_finding mf ON mf.filter_finding = ia.filter_finding
+INNER JOIN portal_redux.match_age_sib_group_cd masg ON masg.age_sib_group_match_code = ia.cd_sib_age_group
+INNER JOIN portal_redux.match_cd_race_census mrc ON mrc.race_census_match_code = ia.cd_race_census
+INNER JOIN portal_redux.match_cd_county mc ON mc.county_match_code = ia.county_cd
+INNER JOIN portal_redux.match_cd_reporter_type mrt ON mrt.reporter_type_match_code = ia.cd_reporter_type
+INNER JOIN portal_redux.match_cd_access_type mat ON mat.filter_access_type = ia.filter_access_type
+INNER JOIN portal_redux.match_allegation ma ON ma.filter_allegation = ia.filter_allegation
+INNER JOIN portal_redux.match_finding mf ON mf.filter_finding = ia.filter_finding
 GROUP BY ia.qry_type,
         ia.date_type,
         ia.start_date,
@@ -151,7 +149,7 @@ GROUP BY ia.qry_type,
         ma.cd_allegation,
         mf.cd_finding
 	) ia
-INNER JOIN ref.lookup_max_date lmd ON ia.start_date BETWEEN lmd.min_date_any AND lmd.max_date_any
+INNER JOIN portal_redux.ref_lookup_max_date lmd ON ia.start_date BETWEEN lmd.min_date_any AND lmd.max_date_any
 	AND lmd.id = 18 -- sp_ia_trends_counts
 
 UPDATE STATISTICS portal_redux.ia_trends_cache;
@@ -177,7 +175,7 @@ SET ia.rate_opened = ROUND(ia.jit_opened / (p.population_count * 1.00) * 1000, 2
 	    ELSE 1
 		END)
     FROM portal_redux.ia_trends_cache ia
-    INNER JOIN ref.match_census_population_household p ON p.measurement_year = YEAR(ia.start_date)
+    INNER JOIN portal_redux.match_census_population_household p ON p.measurement_year = YEAR(ia.start_date)
 	    AND p.age_sib_group_cd = ia.age_sib_group_cd
 	    AND p.cd_race_census = ia.cd_race_census
 	    AND p.cd_county = ia.cd_county

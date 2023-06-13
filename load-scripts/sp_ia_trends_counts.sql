@@ -1,5 +1,6 @@
 -- create portal_redux.sp_ia_trends_counts;
 
+-- DROP PROCEDURE portal_redux.sp_ia_trends_counts;
 CREATE PROCEDURE portal_redux.[sp_ia_trends_counts](
   @age_grouping_cd varchar(30)
 ,  @race_cd varchar(30)
@@ -212,7 +213,7 @@ as
 	
 
 		set @qry_id=(
-		select top 1 qry_id from portal_reduxcache_poc2ab_params
+		select top 1 qry_id from portal_redux.cache_poc2ab_params
 		where age_grouping_cd=left(@age_grouping_cd,20)
 		and cd_race_census=left(@race_cd,30) 
 		and cd_county=	left(@cd_county,250)   
@@ -244,7 +245,7 @@ as
 					OUTPUT inserted.qry_ID into @tblqryid
 				select 
 					isnull((select max(qry_id) +1
-						from portal_redux[cache_poc2ab_params]),1)
+						from portal_redux.[cache_poc2ab_params]),1)
 					,@age_grouping_cd
 					,@race_cd
 					,@cd_county
@@ -311,7 +312,7 @@ as
 			begin
 
 		
-							insert into portal_reduxcache_poc2ab_aggr( 
+							insert into portal_redux.cache_poc2ab_aggr( 
 								[qry_type]
 								,[date_type]
 								,[start_date]
@@ -361,7 +362,7 @@ as
 									+ fnd.cd_finding
 								,ck.qry_id  
 								,prtl_poc2ab.start_year
-							FROM portal_reduxprtl_poc2ab  
+							FROM portal_redux.prtl_poc2ab  
 								join #prmlocdem mtch on mtch.int_match_param_key=prtl_poc2ab.int_match_param_key 
 								join (select distinct cd_race from #eth ) rc on rc.cd_race=mtch.cd_race_census 
 								join #rpt rpt on rpt.match_code=prtl_poc2ab.cd_reporter_type
@@ -392,7 +393,7 @@ as
 						update cache_poc2ab_aggr
 						set cache_poc2ab_aggr.fl_include_perCapita=0
 						-- select pop_cnt, cache_poc1ab_aggr.*
-						from portal_reduxcache_poc2ab_aggr,prm_household_census_population   
+						from portal_redux.cache_poc2ab_aggr,prm_household_census_population   
 						where exists(select * from #cachekeys ck where cache_poc2ab_aggr.qry_id=ck.qry_id)
 						and prm_household_census_population.measurement_year=start_year
 						and prm_household_census_population.county_cd=cache_poc2ab_aggr.cd_county 
@@ -403,11 +404,11 @@ as
 							or cache_poc2ab_aggr.cnt_closed * 1.00 > pop_cnt*.35)				;
 							
 
-						update statistics portal_reduxcache_poc2ab_aggr;
+						update statistics portal_redux.cache_poc2ab_aggr;
 
 
 		
-						insert into portal_reduxcache_qry_param_poc2ab
+						insert into portal_redux.cache_qry_param_poc2ab
 						([int_param_key]
 						,[cd_sib_age_grp]
 						,[cd_race]
@@ -439,13 +440,13 @@ as
 						where ck.in_cache=0;
 						
 						
-						update statistics portal_reduxcache_qry_param_poc2ab;
+						update statistics portal_redux.cache_qry_param_poc2ab;
 
 						
 					  end -- if @qry_id is null
 					else  If @qry_id is not null
 						begin
-									update portal_reduxcache_poc2ab_params
+									update portal_redux.cache_poc2ab_params
 									set cnt_qry=cnt_qry + 1,last_run_date=getdate()
 									where @qry_id=qry_id
 			end
@@ -497,7 +498,7 @@ from (
 		,dbo.fnc_jitter(poc2ab.cnt_start_date,poc2ab.x1,poc2ab.x2) [Total Cases First Day]
 		,dbo.fnc_jitter(poc2ab.cnt_opened,poc2ab.x1,poc2ab.x2) [Opened Cases]
 		,dbo.fnc_jitter(poc2ab.cnt_closed,poc2ab.x1,poc2ab.x2) [Closed Cases]
-	from portal_reduxcache_poc2ab_aggr poc2ab  
+	from portal_redux.cache_poc2ab_aggr poc2ab  
 	join #cachekeys ck on ck.int_hash_key=poc2ab.int_all_param_key
 	join (select distinct cd_reporter_type from #rpt) rpt on rpt.cd_reporter_type=poc2ab.cd_reporter_type
 	join (select distinct cd_access_type from #access_type) acc on acc.cd_access_type=poc2ab.cd_access_type
