@@ -15,7 +15,7 @@ CREATE TABLE portal_redux.CASE_PARTICIPANT_FACT (
 -- load table data
 
 BULK INSERT portal_redux.CASE_PARTICIPANT_FACT
-FROM 'D:\S3\fldw-in\CASE_PARTICIPANT_FACT.TXT'
+FROM 'D:\S3\fldw-in\CASE_PARTICIPANT_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

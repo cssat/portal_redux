@@ -15,7 +15,7 @@ CREATE TABLE portal_redux.INVESTIGATION_TYPE_DIM (
 -- load table data
 
 BULK INSERT portal_redux.INVESTIGATION_TYPE_DIM
-FROM 'D:\S3\fldw-in\INVESTIGATION_TYPE_DIM.TXT'
+FROM 'D:\S3\fldw-in\INVESTIGATION_TYPE_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

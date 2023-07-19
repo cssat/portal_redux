@@ -1,0 +1,75 @@
+-- create rptFosterHomes table
+
+-- DROP TABLE portal_redux.rptFosterHomes;
+CREATE TABLE portal_redux.rptFosterHomes (
+	ID_PRVD_ORG nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CD_REGION nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	TX_REGION nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	COUNTY nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CD_SCHOOL_DISTRICT nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	TX_SCHOOL_DISTRICT nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	ID_LCNS nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CD_FACILITY_TYPE nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	TX_LICENSE_FACILITY_TYPE nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CD_LCNS_TYPE nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	TX_LCNS_TYPE nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CD_LCNS_STAT nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	TX_LCNS_STAT nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CD_LICENSE_CERTIFICATE nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	TX_LICENSE_CERTIFICATE nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CD_CHILD_SPECIFIC_FOSTER_HOME nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	TX_LICENSE_CHILD_SPECIFIC nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	LICENSE_ISSUED nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	LICENSE_CLOSED nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	QT_TOTAL_CAP nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[SIB_2+] nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[SIB_3+] nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	TX_GENDER nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	QT_AGE_FROM_YEAR nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	QT_AGE_TO_YEAR nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FL_MEDICALLY_FRAGILE nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FL_AGE_GROUP1 nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FL_AGE_GROUP2 nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FL_AGE_GROUP3 nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FL_FOSTER_CARE_LEVEL1 nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FL_FOSTER_CARE_LEVEL2 nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FL_FOSTER_CARE_LEVEL3 nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FL_FOSTER_CARE_LEVEL4 nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FL_BRS nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FL_RESPITE nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FL_OPEN nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FL_RELATIVE_CAREGIVER nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CD_PROVIDER_TYPE nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	TX_PROVIDER_TYPE nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	NUM_CHILD_BY_LCNS nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	NUM_CHILD_CURR nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	SFY_BEGIN nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	SFY_END nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	RunDate nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	MINORITY_HOME nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FIRST_SFY nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	LAST_SFY nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	RETAINED_MOS nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	DAYS_FIRSTP nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	DAYS_LASTP nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	LIC_EXPIRE_DT nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	DAYS_TO_EXPIRE nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CD_APPROVAL_STATUS nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	LCNS_APPRVL nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	DRVD_LCNS_CLS_DT nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	NUM_CHILD_TOTAL nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CD_ACTN_RSN nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	TX_ACTION_RSN nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	APLCTN_DT nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	NUM_CHILD_CURR_NONCA nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+);
+
+-- load table data
+
+BULK INSERT portal_redux.rptFosterHomes
+FROM 'D:\S3\fldw-in\rptFosterHomes.txt'
+WITH (
+    firstrow = 2,
+    fieldterminator = '|',
+    rowterminator = '\n'
+);

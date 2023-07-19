@@ -27,7 +27,7 @@ CREATE TABLE portal_redux.PROVIDER_PART_FACT (
 -- load table data
 
 BULK INSERT portal_redux.PROVIDER_PART_FACT
-FROM 'D:\S3\fldw-in\PROVIDER_PART_FACT.TXT'
+FROM 'D:\S3\fldw-in\PROVIDER_PART_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

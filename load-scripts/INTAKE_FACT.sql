@@ -46,7 +46,7 @@ CREATE TABLE portal_redux.INTAKE_FACT (
 -- load table data
 
 BULK INSERT portal_redux.INTAKE_FACT
-FROM 'D:\S3\fldw-in\INTAKE_FACT.TXT'
+FROM 'D:\S3\fldw-in\INTAKE_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

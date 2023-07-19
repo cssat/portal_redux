@@ -27,7 +27,7 @@ CREATE TABLE portal_redux.PERMANENCY_FACT (
 -- load table data
 
 BULK INSERT portal_redux.PERMANENCY_FACT
-FROM 'D:\S3\fldw-in\PERMANENCY_FACT.TXT'
+FROM 'D:\S3\fldw-in\PERMANENCY_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

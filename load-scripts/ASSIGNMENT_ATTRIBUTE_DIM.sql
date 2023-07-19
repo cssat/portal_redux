@@ -21,7 +21,7 @@ CREATE TABLE portal_redux.ASSIGNMENT_ATTRIBUTE_DIM (
 -- load table data
 
 BULK INSERT portal_redux.ASSIGNMENT_ATTRIBUTE_DIM
-FROM 'D:\S3\fldw-in\ASSIGNMENT_ATTRIBUTE_DIM.TXT'
+FROM 'D:\S3\fldw-in\ASSIGNMENT_ATTRIBUTE_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',
