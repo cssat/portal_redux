@@ -20,7 +20,7 @@ CREATE TABLE portal_redux.PROVIDER_SERVICE_LICENSE_FACT (
 -- load table data
 
 BULK INSERT portal_redux.PROVIDER_SERVICE_LICENSE_FACT
-FROM 'D:\S3\fldw-in\PROVIDER_SERVICE_LICENSE_FACT.TXT'
+FROM 'D:\S3\fldw-in\PROVIDER_SERVICE_LICENSE_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

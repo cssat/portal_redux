@@ -33,7 +33,7 @@ CREATE TABLE portal_redux.EDUCATION_PLAN_DIM (
 -- load table data
 
 BULK INSERT portal_redux.EDUCATION_PLAN_DIM
-FROM 'D:\S3\fldw-in\EDUCATION_PLAN_DIM.TXT'
+FROM 'D:\S3\fldw-in\EDUCATION_PLAN_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

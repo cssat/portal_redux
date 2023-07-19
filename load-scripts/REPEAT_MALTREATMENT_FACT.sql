@@ -33,7 +33,7 @@ CREATE TABLE portal_redux.REPEAT_MALTREATMENT_FACT (
 -- load table data
 
 BULK INSERT portal_redux.REPEAT_MALTREATMENT_FACT
-FROM 'D:\S3\fldw-in\REPEAT_MALTREATMENT_FACT.TXT'
+FROM 'D:\S3\fldw-in\REPEAT_MALTREATMENT_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

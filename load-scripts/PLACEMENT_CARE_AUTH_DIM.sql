@@ -17,7 +17,7 @@ CREATE TABLE portal_redux.PLACEMENT_CARE_AUTH_DIM (
 -- load table data
 
 BULK INSERT portal_redux.PLACEMENT_CARE_AUTH_DIM
-FROM 'D:\S3\fldw-in\PLACEMENT_CARE_AUTH_DIM.TXT'
+FROM 'D:\S3\fldw-in\PLACEMENT_CARE_AUTH_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

@@ -28,7 +28,7 @@ CREATE TABLE portal_redux.SIBLING_RELATIONSHIP_FACT (
 -- load table data
 
 BULK INSERT portal_redux.SIBLING_RELATIONSHIP_FACT
-FROM 'D:\S3\fldw-in\SIBLING_RELATIONSHIP_FACT.TXT'
+FROM 'D:\S3\fldw-in\SIBLING_RELATIONSHIP_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',
