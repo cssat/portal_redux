@@ -1,3 +1,14 @@
+-- execute portal_redux.sp_ia_trends_counts;
+EXEC portal_redux.sp_ia_trends_counts
+	@age_grouping_cd = 0,
+	@race_cd = 0,
+	@cd_county = 0,
+	@cd_reporter_type = 0,
+	@filter_access_type = 0,
+	@filter_allegation = 0,
+	@filter_finding = 0;
+
+
 -- create portal_redux.sp_ia_trends_counts;
 
 -- DROP PROCEDURE portal_redux.sp_ia_trends_counts;
