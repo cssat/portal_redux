@@ -29,7 +29,7 @@ CREATE TABLE portal_redux.CASE_DIM (
 -- load table data
 
 BULK INSERT portal_redux.CASE_DIM
-FROM 'D:\S3\fldw-in\CASE_DIM.TXT'
+FROM 'D:\S3\fldw-in\CASE_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

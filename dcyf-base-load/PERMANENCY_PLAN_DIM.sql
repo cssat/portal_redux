@@ -16,7 +16,7 @@ CREATE TABLE portal_redux.PERMANENCY_PLAN_DIM (
 -- load table data
 
 BULK INSERT portal_redux.PERMANENCY_PLAN_DIM
-FROM 'D:\S3\fldw-in\PERMANENCY_PLAN_DIM.TXT'
+FROM 'D:\S3\fldw-in\PERMANENCY_PLAN_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

@@ -15,7 +15,7 @@ CREATE TABLE portal_redux.LEGAL_STATUS_DIM (
 -- load table data
 
 BULK INSERT portal_redux.LEGAL_STATUS_DIM
-FROM 'D:\S3\fldw-in\LEGAL_STATUS_DIM.TXT'
+FROM 'D:\S3\fldw-in\LEGAL_STATUS_DIM.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

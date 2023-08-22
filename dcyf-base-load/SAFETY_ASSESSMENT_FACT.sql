@@ -52,7 +52,7 @@ CREATE TABLE portal_redux.SAFETY_ASSESSMENT_FACT (
 -- load table data
 
 BULK INSERT portal_redux.SAFETY_ASSESSMENT_FACT
-FROM 'D:\S3\fldw-in\SAFETY_ASSESSMENT_FACT.TXT'
+FROM 'D:\S3\fldw-in\SAFETY_ASSESSMENT_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

@@ -13,7 +13,7 @@ CREATE TABLE portal_redux.INTAKE_SERVICE_BRIDGE_FACT (
 -- load table data
 
 BULK INSERT portal_redux.INTAKE_SERVICE_BRIDGE_FACT
-FROM 'D:\S3\fldw-in\INTAKE_SERVICE_BRIDGE_FACT.TXT'
+FROM 'D:\S3\fldw-in\INTAKE_SERVICE_BRIDGE_FACT.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

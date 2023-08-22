@@ -87,4 +87,8 @@ WITH (
     firstrow = 2,
     fieldterminator = '|',
     rowterminator = '\n'
+<<<<<<< HEAD
 );
+=======
+);
+>>>>>>> main
