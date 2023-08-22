@@ -1,4 +1,6 @@
+-- create IntDate_to_CalDate function
 
+-- DROP FUNCTION portal_redux.IntDate_to_CalDate;
 create function [portal_redux].[IntDate_to_CalDate](@id_calendar_dim integer) returns datetime
  begin
 	declare @myDate as datetime
