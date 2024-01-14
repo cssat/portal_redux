@@ -1,13 +1,13 @@
 -- create prtl_pbcs2 table
 
--- DROP TABLE portal_redux.prtl_pbcs2;
+DROP TABLE IF EXISTS portal_redux.prtl_pbcs2;
 CREATE TABLE portal_redux.prtl_pbcs2 (
 	cohort_begin_date datetime NOT NULL,
 	date_type int NOT NULL,
 	qry_type int NOT NULL,
-	int_match_param_key bigint NOT NULL,
+	int_match_param_key bigint NULL,
 	cd_sib_age_grp int NOT NULL,
-	cd_race_census int NOT NULL,
+	cd_race_census int NULL,
 	census_hispanic_latino_origin_cd int NOT NULL,
 	county_cd int NOT NULL,
 	filter_access_type int NOT NULL,
@@ -23,8 +23,8 @@ CREATE TABLE portal_redux.prtl_pbcs2 (
 	case_repeat_referral int NOT NULL,
 	cnt_case int NOT NULL,
 	nxt_ref_within_min_month int NOT NULL,
-	CONSTRAINT PK_prtl_pbcs2_1 PRIMARY KEY (cohort_begin_date,date_type,qry_type,int_match_param_key,filter_access_type,filter_allegation,filter_finding,cd_reporter_type,bin_ihs_svc_cd,initref,initfndref,case_founded_recurrence,nxt_ref_within_min_month),
-	CONSTRAINT prtl_pbcs2_cd_race_FK FOREIGN KEY (cd_race_census) REFERENCES portal_redux.ref_lookup_ethnicity_census(cd_race_census),
+	CONSTRAINT PK_prtl_pbcs2_1 PRIMARY KEY (cohort_begin_date,date_type,qry_type,filter_access_type,filter_allegation,filter_finding,cd_reporter_type,bin_ihs_svc_cd,initref,initfndref,case_founded_recurrence,nxt_ref_within_min_month) WITH (IGNORE_DUP_KEY = ON) ON [PRIMARY],
+	--CONSTRAINT prtl_pbcs2_cd_race_FK FOREIGN KEY (cd_race_census) REFERENCES portal_redux.ref_lookup_ethnicity_census(cd_race_census),
 	CONSTRAINT prtl_pbcs2_cd_reporter_type_FK FOREIGN KEY (cd_reporter_type) REFERENCES portal_redux.ref_filter_reporter_type(cd_reporter_type),
 	CONSTRAINT prtl_pbcs2_cd_sib_age_grpr_FK FOREIGN KEY (cd_sib_age_grp) REFERENCES portal_redux.ref_lookup_sib_age_grp(cd_sib_age_grp),
 	CONSTRAINT prtl_pbcs2_county_cd_FK FOREIGN KEY (county_cd) REFERENCES portal_redux.ref_lookup_county(county_cd),
@@ -32,22 +32,18 @@ CREATE TABLE portal_redux.prtl_pbcs2 (
 );
 CREATE NONCLUSTERED INDEX idx_nxt_ref_within_min_month ON portal_redux.prtl_pbcs2 (  nxt_ref_within_min_month ASC  , cohort_begin_date ASC  , int_match_param_key ASC  , cohortrefcount ASC  )  
 	WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
-	ON [PRIMARY] ;
+	ON [PRIMARY ] ;
 CREATE NONCLUSTERED INDEX idx_reporter_type_cohortrefcount ON portal_redux.prtl_pbcs2 (  cd_reporter_type ASC  , cohortrefcount ASC  )  
 	INCLUDE ( cnt_case , cohort_begin_date , filter_access_type , filter_allegation , filter_finding , int_match_param_key , qry_type ) 
 	WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
-	ON [PRIMARY];
+	ON [PRIMARY ] ;
 CREATE NONCLUSTERED INDEX idx_s2 ON portal_redux.prtl_pbcs2 (  cd_sib_age_grp ASC  , filter_finding ASC  )  
 	WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
-	ON [PRIMARY];
+	ON [PRIMARY ] ;
 
 
 -- populate prtl_pbcs2 table
 
---  exec [prod_build_prtl_pbcs2] '2014-08-08'
--- DROP PROCEDURE portal_redux.prod_build_prtl_pbcs2;
-CREATE procedure [portal_redux].[prod_build_prtl_pbcs2]
-as 
 begin
 		set nocount on
 
@@ -58,6 +54,7 @@ begin
 	--	set @chstart = (select min_date_any  from ref_lookup_max_date where id=6)
 
 		select @chstart=min_date_any,@chend=dateadd(dd,-1,dateadd(yy,1,max_date_yr)) from portal_redux.ref_lookup_max_date where id=6;
+		SET @chend = '2014-01-01 00:00:00.000'; -- original value is NULL, USING substitute
 
 		if object_id('tempdb..#intakes') is not null drop table #intakes;
 
@@ -69,7 +66,7 @@ begin
 			,eps.ihs_begin_date)  asc) row_num
 			,case when eps.total_amt_paid > 0  then 1 else 2 end as bin_ihs_svc_cd
 			from portal_redux.tbl_intakes intk
-			join  portal_redux.tbl_ihs_episodes eps on intk.id_intake_fact=eps.id_intake_fact
+			join portal_redux.tbl_ihs_episodes eps on intk.id_intake_fact=eps.id_intake_fact
 			where fl_ihs_90_day=1 and fl_dlr=0
 			and intk.id_case>0
 			)
@@ -128,7 +125,7 @@ begin
 		from portal_redux.tbl_intakes intk
 		join portal_redux.CALENDAR_DIM cd on cd.CALENDAR_DATE=intk.inv_ass_start
 		left join cte_ihs ihs on ihs.id_intake_fact=intk.id_intake_fact and ihs.row_num=1
-		left join ref_xwlk_reporter_type xwr on xwr.cd_reporter_type=intk.cd_reporter
+		left join portal_redux.ref_xwlk_reporter_type xwr on xwr.cd_reporter_type=intk.cd_reporter
 		where 	intk.id_case>0
 		and intk.inv_ass_start  between @chstart and @chend
 				and intk.cd_final_decision=1 
@@ -146,7 +143,7 @@ begin
 			,intk.rfrd_date
 			,intk.first_intake_date
 
-			
+
 		create nonclustered index idx_prsn_intake on #intakes(id_intake_fact);
 		create nonclustered index idx_prsn_rfrd on #intakes(id_case,rfrd_date);
 
@@ -247,6 +244,7 @@ begin
 			and intk.refcount = more.refcount-1
 			and intk.days_to_next_referral <=1461
 
+
 		update intk
 		set	nxt_ref_within_min_month = 
 		case when days_to_next_referral<=92 then 3
@@ -270,6 +268,7 @@ begin
 
 		delete from #intakes where NOT (cohortrefcount=1 or cohortfndrefcount=1 or initref=1 or initfndref=1)
 
+
 		alter table portal_redux.prtl_pbcs2 NOCHECK CONSTRAINT ALL;
 		truncate table portal_redux.prtl_pbcs2
 		--  first import first ever referrals
@@ -280,23 +279,23 @@ begin
 			,cd_race_census
 			,census_hispanic_latino_origin_cd
 			,iif(intake_county_cd=99,-99,intake_county_cd) [intake_county_cd]
-		, (select cd_multiplier from ref_filter_access_type where cd_access_type=0 )
-			+  fl_far * (select cd_multiplier from ref_filter_access_type where fl_name='fl_far')
-			+  fl_cps_invs * (select cd_multiplier from ref_filter_access_type where fl_name='fl_cps_invs')
-			+ fl_alternate_intervention  * (select cd_multiplier from ref_filter_access_type where fl_name='fl_alternate_intervention')
-			+ fl_frs * (select cd_multiplier from ref_filter_access_type where fl_name='fl_frs')
-			+ fl_risk_only * (select cd_multiplier from ref_filter_access_type where fl_name='fl_risk_only')
-			+ fl_cfws * (select cd_multiplier from ref_filter_access_type where fl_name='fl_cfws')   [filter_access_type]
-		,(select cd_multiplier from ref_filter_allegation where cd_allegation=0)
-				+ ( [fl_phys_abuse] * (select cd_multiplier from ref_filter_allegation where fl_name='fl_phys_abuse'))
-				+ ([fl_sexual_abuse] * (select cd_multiplier from ref_filter_allegation where fl_name='fl_sexual_abuse'))
-				+ ([fl_neglect] * (select cd_multiplier from ref_filter_allegation where fl_name='fl_neglect'))
-				+ ([fl_any_legal] * (select cd_multiplier from ref_filter_allegation where fl_name='fl_any_legal')) [filter_allegation]
-		,(select cd_multiplier from ref_filter_finding where cd_finding=0)
-				+ ([fl_founded_phys_abuse] * (select cd_multiplier from ref_filter_finding where fl_name='fl_founded_phys_abuse'))
-				+ ([fl_founded_sexual_abuse] * (select cd_multiplier from ref_filter_finding where fl_name='fl_founded_sexual_abuse'))
-				+ ([fl_founded_neglect] * (select cd_multiplier from ref_filter_finding where fl_name='fl_founded_neglect'))
-				+ (fl_founded_any_legal * (select cd_multiplier from ref_filter_finding where fl_name='fl_any_finding_legal')) [filter_finding]			
+		, (select cd_multiplier from portal_redux.ref_filter_access_type where cd_access_type=0 )
+			+  fl_far * (select cd_multiplier from portal_redux.ref_filter_access_type where fl_name='fl_far')
+			+  fl_cps_invs * (select cd_multiplier from portal_redux.ref_filter_access_type where fl_name='fl_cps_invs')
+			+ fl_alternate_intervention  * (select cd_multiplier from portal_redux.ref_filter_access_type where fl_name='fl_alternate_intervention')
+			+ fl_frs * (select cd_multiplier from portal_redux.ref_filter_access_type where fl_name='fl_frs')
+			+ fl_risk_only * (select cd_multiplier from portal_redux.ref_filter_access_type where fl_name='fl_risk_only')
+			+ fl_cfws * (select cd_multiplier from portal_redux.ref_filter_access_type where fl_name='fl_cfws')   [filter_access_type]
+		,(select cd_multiplier from portal_redux.ref_filter_allegation where cd_allegation=0)
+				+ ( [fl_phys_abuse] * (select cd_multiplier from portal_redux.ref_filter_allegation where fl_name='fl_phys_abuse'))
+				+ ([fl_sexual_abuse] * (select cd_multiplier from portal_redux.ref_filter_allegation where fl_name='fl_sexual_abuse'))
+				+ ([fl_neglect] * (select cd_multiplier from portal_redux.ref_filter_allegation where fl_name='fl_neglect'))
+				+ ([fl_any_legal] * (select cd_multiplier from portal_redux.ref_filter_allegation where fl_name='fl_any_legal')) [filter_allegation]
+		,(select cd_multiplier from portal_redux.ref_filter_finding where cd_finding=0)
+				+ ([fl_founded_phys_abuse] * (select cd_multiplier from portal_redux.ref_filter_finding where fl_name='fl_founded_phys_abuse'))
+				+ ([fl_founded_sexual_abuse] * (select cd_multiplier from portal_redux.ref_filter_finding where fl_name='fl_founded_sexual_abuse'))
+				+ ([fl_founded_neglect] * (select cd_multiplier from portal_redux.ref_filter_finding where fl_name='fl_founded_neglect'))
+				+ (fl_founded_any_legal * (select cd_multiplier from portal_redux.ref_filter_finding where fl_name='fl_any_finding_legal')) [filter_finding]			
 			,cd_reporter_type
 			,bin_ihs_svc_cd
 			,initref
@@ -307,8 +306,7 @@ begin
 			,case_repeat_referral
 			,count(distinct id_case) as cnt_case
 	, coalesce(nxt_ref_within_min_month,99999)
-		from #intakes where initref=1
-        AND int_match_param_key IS NOT NULL
+		from #intakes where initref=1 
 		group by cohort_begin_date
 			,int_match_param_key
 			,cd_sib_age_grp
@@ -345,23 +343,23 @@ begin
 			,cd_race_census
 			,census_hispanic_latino_origin_cd
 			,iif(intake_county_cd=99,-99,intake_county_cd) [intake_county_cd]
-		, (select cd_multiplier from ref_filter_access_type where cd_access_type=0 )
-			+  fl_far * (select cd_multiplier from ref_filter_access_type where fl_name='fl_far')
-			+  fl_cps_invs * (select cd_multiplier from ref_filter_access_type where fl_name='fl_cps_invs')
-			+ fl_alternate_intervention  * (select cd_multiplier from ref_filter_access_type where fl_name='fl_alternate_intervention')
-			+ fl_frs * (select cd_multiplier from ref_filter_access_type where fl_name='fl_frs')
-			+ fl_risk_only * (select cd_multiplier from ref_filter_access_type where fl_name='fl_risk_only')
-			+ fl_cfws * (select cd_multiplier from ref_filter_access_type where fl_name='fl_cfws')   [filter_access_type]
-		,(select cd_multiplier from ref_filter_allegation where cd_allegation=0)
-				+ ( [fl_phys_abuse] * (select cd_multiplier from ref_filter_allegation where fl_name='fl_phys_abuse'))
-				+ ([fl_sexual_abuse] * (select cd_multiplier from ref_filter_allegation where fl_name='fl_sexual_abuse'))
-				+ ([fl_neglect] * (select cd_multiplier from ref_filter_allegation where fl_name='fl_neglect'))
-				+ ([fl_any_legal] * (select cd_multiplier from ref_filter_allegation where fl_name='fl_any_legal')) [filter_allegation]
-		,(select cd_multiplier from ref_filter_finding where cd_finding=0)
-				+ ([fl_founded_phys_abuse] * (select cd_multiplier from ref_filter_finding where fl_name='fl_founded_phys_abuse'))
-				+ ([fl_founded_sexual_abuse] * (select cd_multiplier from ref_filter_finding where fl_name='fl_founded_sexual_abuse'))
-				+ ([fl_founded_neglect] * (select cd_multiplier from ref_filter_finding where fl_name='fl_founded_neglect'))
-				+ (fl_founded_any_legal * (select cd_multiplier from ref_filter_finding where fl_name='fl_any_finding_legal')) [filter_finding]		
+		, (select cd_multiplier from portal_redux.ref_filter_access_type where cd_access_type=0 )
+			+  fl_far * (select cd_multiplier from portal_redux.ref_filter_access_type where fl_name='fl_far')
+			+  fl_cps_invs * (select cd_multiplier from portal_redux.ref_filter_access_type where fl_name='fl_cps_invs')
+			+ fl_alternate_intervention  * (select cd_multiplier from portal_redux.ref_filter_access_type where fl_name='fl_alternate_intervention')
+			+ fl_frs * (select cd_multiplier from portal_redux.ref_filter_access_type where fl_name='fl_frs')
+			+ fl_risk_only * (select cd_multiplier from portal_redux.ref_filter_access_type where fl_name='fl_risk_only')
+			+ fl_cfws * (select cd_multiplier from portal_redux.ref_filter_access_type where fl_name='fl_cfws')   [filter_access_type]
+		,(select cd_multiplier from portal_redux.ref_filter_allegation where cd_allegation=0)
+				+ ( [fl_phys_abuse] * (select cd_multiplier from portal_redux.ref_filter_allegation where fl_name='fl_phys_abuse'))
+				+ ([fl_sexual_abuse] * (select cd_multiplier from portal_redux.ref_filter_allegation where fl_name='fl_sexual_abuse'))
+				+ ([fl_neglect] * (select cd_multiplier from portal_redux.ref_filter_allegation where fl_name='fl_neglect'))
+				+ ([fl_any_legal] * (select cd_multiplier from portal_redux.ref_filter_allegation where fl_name='fl_any_legal')) [filter_allegation]
+		,(select cd_multiplier from portal_redux.ref_filter_finding where cd_finding=0)
+				+ ([fl_founded_phys_abuse] * (select cd_multiplier from portal_redux.ref_filter_finding where fl_name='fl_founded_phys_abuse'))
+				+ ([fl_founded_sexual_abuse] * (select cd_multiplier from portal_redux.ref_filter_finding where fl_name='fl_founded_sexual_abuse'))
+				+ ([fl_founded_neglect] * (select cd_multiplier from portal_redux.ref_filter_finding where fl_name='fl_founded_neglect'))
+				+ (fl_founded_any_legal * (select cd_multiplier from portal_redux.ref_filter_finding where fl_name='fl_any_finding_legal')) [filter_finding]		
 			,cd_reporter_type
 			,bin_ihs_svc_cd
 			,initref
@@ -373,7 +371,6 @@ begin
 			,count(distinct id_case) as cnt_case
 			, coalesce(nxt_ref_within_min_month,99999)
 		from #intakes  where  cohortrefcount=1
-        AND int_match_param_key IS NOT NULL
 		group by cohort_begin_date
 			,int_match_param_key
 			,cd_sib_age_grp
@@ -404,7 +401,12 @@ begin
 			,case_repeat_referral
 			, nxt_ref_within_min_month
 
-	ALTER TABLE portal_redux.prtl_pbcs2 CHECK CONSTRAINT ALL;
-	UPDATE STATISTICS portal_redux.prtl_pbcs2;
+			alter table portal_redux.prtl_pbcs2 CHECK CONSTRAINT ALL;
+			update statistics portal_redux.prtl_pbcs2;
 
-END;
+			update portal_redux.prtl_tables_last_update		
+			set last_build_date=getdate()
+				,row_count=(select count(*) from portal_redux.prtl_pbcs2)
+			where tbl_id=6;	
+
+end;

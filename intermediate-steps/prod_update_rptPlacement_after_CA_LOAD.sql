@@ -1,39 +1,73 @@
--- create prod_update_rptPlacement_after_CA_LOAD procedure
 
--- DROP PROCEDURE protal_redux.prod_update_rptPlacement_after_CA_LOAD
-CREATE procedure portal_redux.prod_update_rptPlacement_after_CA_LOAD
-as
-
-		update portal_redux.rptPlacement_Events
+	update portal_redux.rptPlacement_Events
 		set end_date='9999-12-31'
 		where end_date is null;
 
-		update portal_redux.rptPlacement_Events
+	update portal_redux.rptPlacement_Events
 		set discharge_dt='9999-12-31'
 		where discharge_dt is null;
 
-		update portal_redux.rptPlacement
+	update portal_redux.rptPlacement
 		set discharge_dt='9999-12-31'
 		where discharge_dt is null;
 	
-		ALTER TABLE portal_redux.rptPlacement_Events
-		ALTER COLUMN bday DATETIME;
+	ALTER TABLE portal_redux.rptPlacement
+		ADD dependency_dt                  DATETIME       NULL,
+    	fl_dep_exist                       INT            NULL,
+    	id_intake_fact                     INT            NULL,
+    	age_at_removal_mos                 INT            NULL,
+    	first_removal_dt                   DATETIME       NULL,
+    	latest_removal_dt                  DATETIME       NULL,
+		child_eps_rank                     INT            NULL,
+		child_cnt_episodes                 INT            NULL,
+		cd_race_census                     INT            NULL,
+		census_hispanic_latino_origin_cd   CHAR(1)		  NULL,
+		initial_id_placement_fact          INT            NULL,
+		longest_id_placement_fact          INT            NULL,
+		next_reentry_date                  DATETIME       NULL,
+		days_to_reentry                    INT            NULL,
+		cd_discharge_type                  INT            NULL,
+		max_bin_los_cd                     INT            NULL,
+		bin_dep_cd                         INT            NULL,
+		bin_ihs_svc_cd                     INT            NULL,
+		dur_days                           INT            NULL,
+		exit_within_month_mult3            INT            NULL,
+		nxt_reentry_within_min_month_mult3 INT            NULL,
+		int_filter_service_category        INT            NULL,
+		filter_service_budget              INT            NULL,
+		nbr_events                         INT            NULL,
+		bin_placement_cd                   INT            NULL,
+		nbr_ooh_events                     INT            NULL,
+		init_cd_plcm_setng                 INT            NULL,
+		long_cd_plcm_setng                 INT            NULL,
+		pk_gndr                            INT            NULL,
+		removal_county_cd                  INT            NULL;
+
+
+
 	
-		ALTER TABLE portal_redux.rptPlacement
-		ALTER COLUMN bday DATETIME;
+	ALTER TABLE portal_redux.rptPlacement_Events
+		ADD id_placement_fact        INT           NULL,
+    	cd_srvc                      INT           NULL,
+    	id_plcmnt_evnt	             INT           NULL,
+    	cd_plcmnt_evnt               CHAR (3)      NULL,
+    	prtl_cd_plcm_setng           INT           NULL,
+    	cd_epsd_type                 INT           NULL,
+    	cd_end_rsn                   INT           NULL,
+    	derived_county               INT           NULL,
+    	id_provider_dim_caregiver    INT           NULL;
 		
-		update portal_redux.rptPlacement_events
-		set bday = dateadd(yy,18,birthdate);
+	update portal_redux.rptPlacement_events
+		set [18bday]=dateadd(yy,18,birthdate);
 
-		update portal_redux.rptPlacement
-		set bday = dateadd(yy,18,birthdate);
-	
-		ALTER TABLE portal_redux.rptPlacement_Events
-		ADD
-			id_placement_fact INT,
+	update portal_redux.rptPlacement
+		set [18bday]=dateadd(yy,18,birthdate);
+
+	ALTER TABLE portal_redux.rptPlacement_Events
+		ADD id_placement_fact INT,
 			id_provider_dim_caregiver INT;
-
-		update portal_redux.rptPlacement_Events
+		
+	update portal_redux.rptPlacement_Events
 		set id_placement_fact = pf.id_placement_fact
 			,id_provider_dim_caregiver=pf.id_provider_dim_caregiver
 		from placement_fact pf
@@ -41,20 +75,15 @@ as
 		and pf.ID_CALENDAR_DIM_BEGIN=rptPlacement_Events.id_calendar_dim_begin
 		and pf.ID_CALENDAR_DIM_END=rptPlacement_Events.id_calendar_dim_end
 		and pf.ID_EPSD=rptPlacement_Events.id_epsd;
-	
-		ALTER TABLE portal_redux.rptPlacement_Events
 
-		update portal_redux.rptPlacement_Events
+	update portal_redux.rptPlacement_Events
 		set cd_plcm_setng=ptd.cd_plcm_setng,tx_plcm_setng=ptd.TX_PLCM_SETNG
 		from placement_fact pf
 		join PLACEMENT_TYPE_DIM ptd on  ptd.ID_PLACEMENT_TYPE_DIM=pf.ID_PLACEMENT_TYPE_DIM
 		where pf.ID_PLACEMENT_FACT=rptPlacement_Events.id_placement_fact
 		and rptPlacement_Events.cd_plcm_setng is null;
-	
-		ALTER TABLE portal_redux.rptPlacement
-		ADD removal_county_cd INT;
-
-		update portal_redux.rptPlacement
+		
+	update portal_redux.rptPlacement
 		set removal_county_cd = iif(cd_cnty=41,40,isnull(cd_cnty,cd_county)) -- 41 = CONVERSION, 40 = Other/Out of State
 
 		--update rptPlacement
@@ -74,13 +103,13 @@ as
 		--set eps.removal_county_cd=cnty.county_cd
 		--from portal_redux.rptPlacement eps
 		--left join (
-		--	select lrd.cd_result,lrd.tx_result,replace(ljd.tx_jurisdiction,'County','') tx_jurisdiction,dbo.IntDate_to_CalDate(lf.id_calendar_dim_effective) as eff_dt ,child,id_removal_episode_fact,removal_dt,discharge_dt
-		--	, ROW_NUMBER() over ( partition by id_removal_episode_fact order by id_removal_episode_fact,dbo.IntDate_to_CalDate(lf.id_calendar_dim_effective) asc) as row_num
+		--	select lrd.cd_result,lrd.tx_result,replace(ljd.tx_jurisdiction,'County','') tx_jurisdiction,portal_redux.IntDate_to_CalDate(lf.id_calendar_dim_effective) as eff_dt ,child,id_removal_episode_fact,removal_dt,discharge_dt
+		--	, ROW_NUMBER() over ( partition by id_removal_episode_fact order by id_removal_episode_fact,portal_redux.IntDate_to_CalDate(lf.id_calendar_dim_effective) asc) as row_num
 		--	from portal_redux.rptPlacement tce
-		--	left join dbo.legal_fact lf on tce.id_case=lf.id_case and tce.child=lf.id_prsn 
-		--		and dbo.IntDate_to_CalDate(lf.id_calendar_dim_effective) between dateadd(dd,-30,removal_dt) and isnull(discharge_dt,'12/31/3999')
-		--	left join dbo.legal_result_dim lrd on lf.id_legal_result_dim=lrd.id_legal_result_dim
-		--	left join dbo.legal_jurisdiction_dim ljd on ljd.id_legal_jurisdiction_dim=lf.id_legal_jurisdiction_dim
+		--	left join portal_redux.legal_fact lf on tce.id_case=lf.id_case and tce.child=lf.id_prsn 
+		--		and portal_redux.IntDate_to_CalDate(lf.id_calendar_dim_effective) between dateadd(dd,-30,removal_dt) and isnull(discharge_dt,'12/31/3999')
+		--	left join portal_redux.legal_result_dim lrd on lf.id_legal_result_dim=lrd.id_legal_result_dim
+		--	left join portal_redux.legal_jurisdiction_dim ljd on ljd.id_legal_jurisdiction_dim=lf.id_legal_jurisdiction_dim
 		--	where tce.removal_county_cd is null
 		--	and  ljd.tx_jurisdiction <> '-'
 		--		) q 
@@ -89,10 +118,6 @@ as
 		--		join ref_lookup_county cnty on cnty.county_desc=replace(tx_jurisdiction,'County','')
 		--	where eps.removal_county_cd is null
 
-			
-		ALTER TABLE portal_redux.rptPlacement_Events
-		ADD derived_county INT;
-		
 		update  portal_redux.rptplacement_events
 		set  derived_county =null
 
@@ -101,11 +126,11 @@ as
 														when pd.CD_PHYS_COUNTY  between 1 and 39 then pd.CD_PHYS_COUNTY 
 														when   wd.CD_CNTY between 1 and 39 then wd.cd_cnty else  -99 end)
 		from portal_redux.rptplacement_events  evt
-		join PLACEMENT_FACT pf on pf.ID_PLACEMENT_FACT=evt.id_placement_fact
-		join PROVIDER_DIM pd on pf.ID_PROVIDER_DIM_CAREGIVER =pd.ID_PROVIDER_DIM
-		left join provider_dim pd2 on pd2.ID_PRVD_ORG=evt.id_prvd_org_caregiver and evt.begin_date between pd2.DT_ROW_BEGIN and pd2.DT_ROW_END
+		join portal_redux.PLACEMENT_FACT pf on pf.ID_PLACEMENT_FACT=evt.id_placement_fact
+		join portal_redux.PROVIDER_DIM pd on pf.ID_PROVIDER_DIM_CAREGIVER =pd.ID_PROVIDER_DIM
+		left join portal_redux.provider_dim pd2 on pd2.ID_PRVD_ORG=evt.id_prvd_org_caregiver and evt.begin_date between pd2.DT_ROW_BEGIN and pd2.DT_ROW_END
 		--join LOCATION_DIM ld on ld.ID_LOCATION_DIM=pf.ID_LOCATION_DIM_PLACEMENT
-		join LOCATION_DIM wd on wd.ID_LOCATION_DIM=pf.ID_LOCATION_DIM_WORKER
+		join portal_redux.LOCATION_DIM wd on wd.ID_LOCATION_DIM=pf.ID_LOCATION_DIM_WORKER
 
 		--update eps  
 		--set eps.removal_county_cd=derived_county
@@ -113,23 +138,6 @@ as
 		--join portal_redux.rptPlacement_Events evt on eps.id_removal_episode_fact=evt.id_removal_episode_fact and evt.plcmnt_seq=1
 		--where eps.removal_county_cd is null
 
-		
-			cd_end_rsn int NULL,
-	cd_epsd_type int NULL,
-	cd_srvc int NULL,
-	id_plcmnt_evnt int NULL,
-
-		
-		
-		-----
-		
-		ALTER TABLE portal_redux.rptPlacement_Events
-		ADD
-			cd_end_rsn INT,
-			cd_epsd_type INT,
-			cd_srvc INT,
-			id_plcmnt_evnt INT;
-	
 		
 		update portal_redux.rptPlacement_Events
 		set cd_end_rsn = prd.cd_end_rsn
@@ -141,14 +149,14 @@ as
 		update  portal_redux.rptPlacement_events
 		set  rptPlacement_events.cd_epsd_type = ptd.cd_epsd_type
 		from placement_fact pf
-		join PLACEMENT_TYPE_DIM ptd on pf.ID_PLACEMENT_TYPE_DIM=pf.ID_PLACEMENT_TYPE_DIM
+		join portal_redux.PLACEMENT_TYPE_DIM ptd on pf.ID_PLACEMENT_TYPE_DIM=pf.ID_PLACEMENT_TYPE_DIM
 		where pf.id_placement_fact=rptPlacement_events.id_placement_fact
 
 
 		update portal_redux.rptPlacement_events
 		set cd_srvc=std.CD_SRVC
 		from PLACEMENT_FACT pf 
-		join SERVICE_TYPE_DIM std on pf.ID_SERVICE_TYPE_DIM=std.ID_SERVICE_TYPE_DIM
+		join portal_redux.SERVICE_TYPE_DIM std on pf.ID_SERVICE_TYPE_DIM=std.ID_SERVICE_TYPE_DIM
 		where rptPlacement_events.id_placement_fact=pf.ID_PLACEMENT_FACT
 
 
@@ -189,7 +197,7 @@ as
 					update R
 					set id_plcmnt_evnt=plc.id_plcmnt_evnt 
 					from portal_redux.rptPlacement_Events R
-					join [ref_lookup_placement_event]  plc on plc.id_plcmnt_evnt=3
+					join portal_redux.ref_lookup_placement_event  plc on plc.id_plcmnt_evnt=3
 					where  cd_srvc=1758 and R.id_plcmnt_evnt=10;
 
 
@@ -197,7 +205,7 @@ as
 					update R
 					set id_plcmnt_evnt=plc.id_plcmnt_evnt 
 					from portal_redux.rptPlacement_Events R
-					join [ref_lookup_placement_event]  plc on plc.id_plcmnt_evnt=10
+					join portal_redux.ref_lookup_placement_event  plc on plc.id_plcmnt_evnt=10
 					where  cd_srvc=245000 and R.id_plcmnt_evnt=10;
 
 
@@ -206,7 +214,7 @@ as
 					update R
 					set id_plcmnt_evnt=plc.id_plcmnt_evnt 
 					from portal_redux.rptPlacement_Events R
-					join [ref_lookup_placement_event]  plc on plc.id_plcmnt_evnt=5
+					join portal_redux.ref_lookup_placement_event  plc on plc.id_plcmnt_evnt=5
 					where  cd_srvc=2
 
 
@@ -214,7 +222,7 @@ as
 					update R
 					set id_plcmnt_evnt=plc.id_plcmnt_evnt 
 					from portal_redux.rptPlacement_Events R
-					join [ref_lookup_placement_event]  plc on plc.id_plcmnt_evnt=12
+					join portal_redux.ref_lookup_placement_event  plc on plc.id_plcmnt_evnt=12
 					where  cd_srvc in (405,1768)
 
 
@@ -223,19 +231,10 @@ as
 					update R
 					set id_plcmnt_evnt=plc.id_plcmnt_evnt 
 					from portal_redux.rptPlacement_Events R
-					join [ref_lookup_placement_event]  plc on plc.id_plcmnt_evnt=7
+					join portal_redux.ref_lookup_placement_event  plc on plc.id_plcmnt_evnt=7
 					where  cd_srvc in (1776,1777)
-					
-					
-					SELECT * FROM portal_redux.rptPlacement_Events rpe ;
-					
-					ALTER TABLE portal_redux.rptPlacement_Events 
-					ADD cd_plcmnt_evnt char(3) COLLATE SQL_Latin1_General_CP1_CI_AS NULL;
+
 				
-					ALTER TABLE portal_redux.rptPlacement_Events 
-					ADD prtl_cd_plcm_setng int NULL;
-
-
 					update R
 					set cd_plcmnt_evnt=plc.cd_plcmnt_evnt
 					,prtl_cd_plcm_setng=plc.cd_plcm_setng
@@ -243,40 +242,11 @@ as
 					,portal_redux.ref_lookup_placement_event plc 
 					where R.id_plcmnt_evnt=plc.id_plcmnt_evnt
 
+		-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
 
-		ALTER TABLE portal_redux.rptPlacement
-		ADD
-			cd_race_census int NULL,
-			census_hispanic_latino_origin_cd int NULL,
-			pk_gndr int NULL,
-			child_cnt_episodes int NULL,
-			latest_removal_dt datetime NULL,
-			first_removal_dt datetime NULL,
-			age_at_removal_mos int NULL,
-			child_eps_rank int NULL,
-			next_reentry_date datetime NULL,
-			days_to_reentry int NULL,
-			longest_id_placement_fact int NULL,
-			long_cd_plcm_setng int NULL,
-			initial_id_placement_fact int NULL,
-			init_cd_plcm_setng int NULL,
-			cd_discharge_type int NULL,
-			dur_days int NULL,
-			max_bin_los_cd int NULL,
-			dependency_dt datetime NULL,
-			fl_dep_exist int NULL,
-			bin_dep_cd int NULL,
-			exit_within_month_mult3 int NULL,
-			nxt_reentry_within_min_month_mult3 int NULL,
-			nbr_events int NULL,
-			nbr_ooh_events int NULL,
-			bin_placement_cd int NULL;
-
-		
-		
 		update portal_redux.rptPlacement
 		set cd_race_census = pd.cd_race_census, census_Hispanic_Latino_Origin_cd=pd.census_Hispanic_Latino_Origin_cd
-		from PEOPLE_DIM pd 
+		from portal_redux.PEOPLE_DIM pd 
 		where
 		pd.id_prsn=rptPlacement.child and pd.IS_CURRENT=1
 
@@ -284,7 +254,7 @@ as
 		update rpt
 		set pk_gndr=g.pk_gndr
 		from portal_redux.rptPlacement rpt
-		left join ref_lookup_gender g on g.cd_gndr=rpt.cd_gndr
+		left join portal_redux.ref_lookup_gender g on g.cd_gndr=rpt.cd_gndr
 
 
 		update rpt
@@ -319,7 +289,7 @@ as
 
 
 		update rpt
-		set long_cd_plcm_setng = prtl_cd_plcm_setng
+		set [long_cd_plcm_setng] = prtl_cd_plcm_setng
 		from portal_redux.rptPlacement  rpt
 		join portal_redux.rptPlacement_Events pe on pe.id_placement_fact=rpt.longest_id_placement_fact
 
@@ -331,7 +301,7 @@ as
 			from portal_redux.rptPlacement_Events ) q on q.id_removal_episode_fact=rpt.id_removal_episode_fact and q.row_num=1
 
 		update rpt
-		set  init_cd_plcm_setng = prtl_cd_plcm_setng
+		set  [init_cd_plcm_setng]= prtl_cd_plcm_setng
 		from portal_redux.rptPlacement  rpt
 		join portal_redux.rptPlacement_Events pe on pe.id_placement_fact=rpt.initial_id_placement_fact
 
@@ -350,13 +320,13 @@ as
 				when discharge_dt is null then xSC.cd_discharge_type
 			else 6 end )=5 and dateadd(yy,18,birthdate) >=removal_dt then portal_redux.lessorDate(dateadd(yy,18,birthdate),(dw.cutoff_date)) else rpt.discharge_dt end
 		from portal_redux.rptPlacement rpt
-		join ref_last_dw_transfer dw on dw.cutoff_date=dw.cutoff_date
-			left join portal_redux.ref_state_discharge_xwalk xw  on rpt.tx_dsch_rsn=xw.tx_dsch_rsn and discharge_dt is not null
-			left join portal_redux.ref_state_discharge_xwalk xwLastEndRsn  on rpt.last_end_rsn=xw.tx_dsch_rsn  and discharge_dt is not null
-			left join portal_redux.ref_state_discharge_xwalk xwExitRsn on rpt.exit_reason=xw.discharge_type  and discharge_dt is not null
+		join portal_redux.ref_last_dw_transfer dw on dw.cutoff_date=dw.cutoff_date
+			left join [portal_redux].[ref_state_discharge_xwalk]  xw  on rpt.tx_dsch_rsn=xw.tx_dsch_rsn and discharge_dt is not null
+			left join [portal_redux].[ref_state_discharge_xwalk]  xwLastEndRsn  on rpt.last_end_rsn=xw.tx_dsch_rsn  and discharge_dt is not null
+			left join [portal_redux].[ref_state_discharge_xwalk]  xwExitRsn on rpt.exit_reason=xw.discharge_type  and discharge_dt is not null
 			left join portal_redux.ref_state_discharge_xwalk xwE  
 						on xwE.CD_DSCH_RSN=12   
-							and dateadd(yy,18,birthdate) < (select cutoff_date from ref_last_dw_transfer)
+							and dateadd(yy,18,birthdate) < (select cutoff_date from portal_redux.ref_last_dw_transfer)
 												and  rpt.discharge_dt > getdate()
 												and dateadd(yy,18,birthdate) >=removal_dt
 			left join portal_redux.ref_state_discharge_xwalk xSC on xSC.state_discharge_reason_code=-99 -- still in care
@@ -371,7 +341,7 @@ as
 		from portal_redux.rptPlacement rpt
 		join (select id_removal_episode_Fact,max(bin_los_cd) as max_bin_los_cd
 				from portal_redux.rptPlacement rpt
-				join ref_filter_los on  rpt.dur_days between dur_days_from and dur_days_thru
+				join portal_redux.[ref_filter_los] on  rpt.dur_days between dur_days_from and dur_days_thru
 					group by id_removal_episode_Fact) q
 					on q.id_removal_episode_fact=rpt.id_removal_episode_fact
 
@@ -393,11 +363,11 @@ as
 							,datediff(dd,tce.removal_dt,dateadd(dd,79,aoc.Petition_date)) as days_frm_state_custody
 							,row_number() over (partition by child ,removal_dt
 									order by datediff(dd,tce.removal_dt,dateadd(dd,79,aoc.petition_date))  asc) as row_num
-						from portal_redux.aoc_petition aoc
+						from aoc.aoc_petition aoc
 						join portal_redux.rptPlacement  tce on 
 						 tce.child=aoc.FAMLINKID
 							and dateadd(dd,79,aoc.petition_date) >= dateadd(dd,-79,dateadd(yy,-1,tce.removal_dt ))
-									and dateadd(dd,79,aoc.petition_date) < isnull(tce.discharge_dt,(select cutoff_date from ref_last_dw_transfer))
+									and dateadd(dd,79,aoc.petition_date) < isnull(tce.discharge_dt,(select cutoff_date from portal_redux.ref_last_dw_transfer))
 						and petition ='DEPENDENCY PETITION' 
 				) q on q.id_removal_episode_fact=tce.id_removal_episode_fact  
 					and q.row_num=1
@@ -448,7 +418,7 @@ as
 			update rpt
 			set bin_dep_cd=  ref.bin_dep_cd
 			from portal_redux.rptPlacement rpt
-				join portal_redux.ref_filter_dependency ref
+				join portal_redux.[ref_filter_dependency] ref
 			on  coalesce(dependency_dt,removal_dt) between dateadd(dd,diff_days_from,removal_dt)
 					and dateadd(dd,diff_days_thru,removal_dt)
 					and ref.fl_dep_exist=rpt.fl_dep_exist and rpt.bin_dep_cd is null
@@ -501,7 +471,7 @@ as
 
 
  update rpt
- set  nbr_events = cnt_events
+ set  [nbr_events]= cnt_events
  from   portal_redux.rptPlacement rpt 
  join (select e.id_removal_episode_fact,count(distinct e.id_placement_fact) as cnt_events
 		from portal_redux.rptPlacement_Events  e
@@ -520,13 +490,18 @@ as
 
 update portal_redux.rptPlacement 
 set bin_placement_cd= ref.bin_placement_cd
-from ref_filter_nbr_placement ref
+from portal_redux.ref_filter_nbr_placement ref
 where nbr_ooh_events between ref.nbr_placement_from and ref.nbr_placement_thru
 and ref.bin_placement_cd <>0
 
 update portal_redux.rptPlacement 
 set bin_placement_cd= ref.bin_placement_cd
-from ref_filter_nbr_placement ref
+from portal_redux.ref_filter_nbr_placement ref
 where nbr_events between ref.nbr_placement_from and ref.nbr_placement_thru
 and rptPlacement.bin_placement_cd = 0
 and ref.bin_placement_cd <>0
+
+
+update portal_redux.procedure_flow
+set last_run_date=getdate()
+where procedure_nm='prod_update_rptPlacement_after_CA_LOAD'
