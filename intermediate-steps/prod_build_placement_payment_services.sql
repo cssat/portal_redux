@@ -1,12 +1,12 @@
 -- create placement_payment_services table
 
--- DROP TABLE portal_redux.placement_payment_services;
+DROP TABLE IF EXISTS portal_redux.placement_payment_services;
 CREATE TABLE portal_redux.placement_payment_services (
 	id_prsn_child int NOT NULL,
 	begin_date datetime NOT NULL,
 	end_date datetime NOT NULL,
 	id_removal_episode_fact int NOT NULL,
-	id_placement_fact int NULL,
+	id_placement_fact int NOT NULL,
 	id_provider_dim_caregiver int NULL,
 	id_case int NOT NULL,
 	dur_days int NULL,
@@ -61,28 +61,32 @@ CREATE TABLE portal_redux.placement_payment_services (
 CREATE NONCLUSTERED INDEX idx_filter_service_category_to_date ON portal_redux.placement_payment_services (  filter_service_category_todate ASC  )  
 	INCLUDE ( begin_date , cd_budget_poc_frc , cd_subctgry_poc_frc , dur_days , end_date , filter_service_budget_todate , fl_adoption_support , fl_behavioral_rehabiliation_services , fl_budget_C12 , fl_budget_C14 , fl_budget_C15 , fl_budget_C16 , fl_budget_C18 , fl_budget_C19 , fl_child_care , fl_close , fl_clothing_incidentals , fl_dup_payment , fl_family_focused_services , fl_family_home_placements , fl_medical , fl_mh_services , fl_other_therapeutic_living_situations , fl_plc_svc , fl_primary_srvc , fl_receiving_care , fl_respite , fl_sexually_aggressive_youth , fl_specialty_adolescent_services , fl_therapeutic_services , fl_transportation , fl_uncat_svc , fl_various , id_case , id_payment_fact , id_placement_fact , id_provider_dim_caregiver , id_prsn_child , id_removal_episode_fact , plcm_pymnt_sort_asc , prov_match , pymt_cd_srvc , pymt_tx_srvc , rate , srvc_match , svc_begin_date , svc_end_date , total_paid , tx_budget_poc_frc , tx_subctgry_poc_frc , unit ) 
 	WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
-	ON [PRIMARY];
+	ON [PRIMARY ] ;
 CREATE NONCLUSTERED INDEX idx_id_placement_fact ON portal_redux.placement_payment_services (  id_placement_fact ASC  )  
 	WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
-	ON [PRIMARY];
+	ON [PRIMARY ] ;
 CREATE NONCLUSTERED INDEX idx_id_prsn_child ON portal_redux.placement_payment_services (  id_prsn_child ASC  )  
 	WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
-	ON [PRIMARY];
+	ON [PRIMARY ] ;
 CREATE NONCLUSTERED INDEX idx_id_removal_episode_fact ON portal_redux.placement_payment_services (  id_removal_episode_fact ASC  )  
 	WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
-	ON [PRIMARY];
+	ON [PRIMARY ] ;
 CREATE NONCLUSTERED INDEX idx_pps_id_placement_fact ON portal_redux.placement_payment_services (  pymt_cd_srvc ASC  )  
 	INCLUDE ( id_placement_fact ) 
 	WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
-	ON [PRIMARY];
+	ON [PRIMARY ] ;
+
+
+-- populate placement_payment_services table
 
 begin
 
-    if OBJECT_ID(N'portal_redux.placement_payment_services',N'U') is not null truncate table  portal_redux.placement_payment_services
-    IF EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS where CONSTRAINT_NAME = 'PK_placement_payment_services')
+if OBJECT_ID(N'portal_redux.placement_payment_services',N'U') is not null truncate table  portal_redux.placement_payment_services
+IF EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS where CONSTRAINT_NAME = 'PK_placement_payment_services')
 alter table  [portal_redux].[placement_payment_services] drop constraint [PK_placement_payment_services];
 
-if object_id('tempDB..#pay') is not null drop table #pay;
+--if object_id('tempDB..#pay') is not null drop table #pay;
+DROP TABLE IF EXISTS #pay;
   select id_payment_fact
 				  ,portal_redux.IntDate_to_CalDate( pf.ID_CALENDAR_DIM_SERVICE_BEGIN) [srvc_begin_dt]
 				 , portal_redux.IntDate_to_CalDate( pf.ID_CALENDAR_DIM_SERVICE_END)[srvc_end_dt]
@@ -94,7 +98,7 @@ if object_id('tempDB..#pay') is not null drop table #pay;
 					,pf.AM_UNITS [am_units]
 					,pf.AM_TOTAL_PAID [am_total_paid]
 			into #pay
-			from payment_fact pf
+			from portal_redux.payment_fact pf
 			where exists (select * from portal_redux.rptPlacement 
 			where rptPlacement.child=pf.ID_PRSN_CHILD)
 			and pf.AM_TOTAL_PAID > 0
@@ -429,7 +433,8 @@ create index idx_pay on #pay(id_prsn_child,[srvc_begin_dt],[srvc_end_dt])
 
 			-- get case payments
 
-				if object_ID('tempDB..#casepay') is not null drop table #casepay
+				--if object_ID('tempDB..#casepay') is not null drop table #casepay
+				DROP TABLE IF EXISTS #casepay;
 				CREATE TABLE #casepay(
 				[id_prsn_child] [int] NULL,
 				[begin_date] [datetime] NOT NULL,
@@ -471,7 +476,7 @@ create index idx_pay on #pay(id_prsn_child,[srvc_begin_dt],[srvc_end_dt])
 							,pf.AM_RATE [am_rate]
 							,pf.AM_UNITS [am_units]
 							,pf.AM_TOTAL_PAID [am_total_paid]
-			from payment_fact pf
+			from portal_redux.payment_fact pf
 			where exists (select * from portal_redux.rptPlacement 
 						where rptPlacement.id_case=pf.id_case)
 				and pf.ID_PRSN_CHILD is null
@@ -631,7 +636,8 @@ and q.id_payment_fact=pps.id_payment_fact
 
 	
 	
-   if OBJECT_ID('tempDB..#toDate') is not null drop table #toDate;
+   --if OBJECT_ID('tempDB..#toDate') is not null drop table #toDate;
+   DROP TABLE IF EXISTS #toDate;
 	SELECT id_placement_fact,id_payment_fact,id_removal_episode_fact
 					,begin_date
 					,end_date
@@ -668,38 +674,38 @@ and q.id_payment_fact=pps.id_payment_fact
 					, cast(null as decimal(18,0)) filter_service_budget_todate
 		  into #toDate
 		  FROM [portal_redux].[placement_payment_services] pps
-		   join ref_service_cd_subctgry_poc srvc on srvc.cd_subctgry_poc_frc=pps.cd_subctgry_poc_frc
-		   join  ref_service_cd_budget_poc_frc bud on bud.cd_budget_poc_frc=pps.cd_budget_poc_frc;
+		   join portal_redux.ref_service_cd_subctgry_poc srvc on srvc.cd_subctgry_poc_frc=pps.cd_subctgry_poc_frc
+		   join  portal_redux.ref_service_cd_budget_poc_frc bud on bud.cd_budget_poc_frc=pps.cd_budget_poc_frc;
 
 		
 		  update #toDate
-		  set filter_service_category_todate= cast((select multiplier from ref_service_cd_subctgry_poc where cd_subctgry_poc_frc=0)
-								+ fl_family_focused_services *   (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_family_focused_services') 
-								+ fl_child_care *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_child_care')  
-								+ fl_therapeutic_services *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_therapeutic_services')  
-								+ fl_mh_services *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_mh_services')  
-								+ fl_receiving_care *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_receiving_care')  
-								+ fl_family_home_placements *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_family_home_placements')  
-								+ fl_behavioral_rehabiliation_services *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_behavioral_rehabiliation_services')   
-								+ fl_other_therapeutic_living_situations *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_other_therapeutic_living_situations')   
-								+ fl_specialty_adolescent_services *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_specialty_adolescent_services')   
-								+ fl_respite *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_respite')   
-								+ fl_transportation *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_transportation')   
-								+ fl_clothing_incidentals *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_clothing_incidentals')   
-								+ fl_sexually_aggressive_youth *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_sexually_aggressive_youth')   
-								+ fl_adoption_support *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_adoption_support')   
-								+ fl_various *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_various')   
-								+ fl_medical *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_medical') 
-								+ fl_ihs_reun *    (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_ihs_reun')  
-								+ fl_concrete_goods *  (select multiplier from ref_service_cd_subctgry_poc where fl_name='fl_concrete_goods')   as decimal(21,0))
-				,filter_service_budget_todate =   cast((select multiplier from [ref_service_cd_budget_poc_frc] where cd_budget_poc_frc='0')
-									 +  fl_budget_C12 *  (select multiplier from [ref_service_cd_budget_poc_frc] where fl_name='fl_budget_C12')
-									 +  fl_budget_C14 *  (select multiplier from [ref_service_cd_budget_poc_frc] where fl_name='fl_budget_C14')
-									 +  fl_budget_C15 *  (select multiplier from [ref_service_cd_budget_poc_frc] where fl_name='fl_budget_C15')
-									 +  fl_budget_C16 *  (select multiplier from [ref_service_cd_budget_poc_frc] where fl_name='fl_budget_C16')
-									 +  fl_budget_C18 *  (select multiplier from [ref_service_cd_budget_poc_frc] where fl_name='fl_budget_C18')
-									 +  fl_budget_C19 *  (select multiplier from [ref_service_cd_budget_poc_frc] where fl_name='fl_budget_C19')
-									 +  fl_uncat_svc *  (select multiplier from [ref_service_cd_budget_poc_frc] where fl_name='fl_uncat_svc') as decimal(9,0));
+		  set filter_service_category_todate= cast((select multiplier from portal_redux.ref_service_cd_subctgry_poc where cd_subctgry_poc_frc=0)
+								+ fl_family_focused_services *   (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_family_focused_services') 
+								+ fl_child_care *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_child_care')  
+								+ fl_therapeutic_services *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_therapeutic_services')  
+								+ fl_mh_services *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_mh_services')  
+								+ fl_receiving_care *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_receiving_care')  
+								+ fl_family_home_placements *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_family_home_placements')  
+								+ fl_behavioral_rehabiliation_services *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_behavioral_rehabiliation_services')   
+								+ fl_other_therapeutic_living_situations *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_other_therapeutic_living_situations')   
+								+ fl_specialty_adolescent_services *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_specialty_adolescent_services')   
+								+ fl_respite *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_respite')   
+								+ fl_transportation *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_transportation')   
+								+ fl_clothing_incidentals *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_clothing_incidentals')   
+								+ fl_sexually_aggressive_youth *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_sexually_aggressive_youth')   
+								+ fl_adoption_support *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_adoption_support')   
+								+ fl_various *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_various')   
+								+ fl_medical *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_medical') 
+								+ fl_ihs_reun *    (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_ihs_reun')  
+								+ fl_concrete_goods *  (select multiplier from portal_redux.ref_service_cd_subctgry_poc where fl_name='fl_concrete_goods')   as decimal(21,0))
+				,filter_service_budget_todate =   cast((select multiplier from portal_redux.[ref_service_cd_budget_poc_frc] where cd_budget_poc_frc='0')
+									 +  fl_budget_C12 *  (select multiplier from portal_redux.[ref_service_cd_budget_poc_frc] where fl_name='fl_budget_C12')
+									 +  fl_budget_C14 *  (select multiplier from portal_redux.[ref_service_cd_budget_poc_frc] where fl_name='fl_budget_C14')
+									 +  fl_budget_C15 *  (select multiplier from portal_redux.[ref_service_cd_budget_poc_frc] where fl_name='fl_budget_C15')
+									 +  fl_budget_C16 *  (select multiplier from portal_redux.[ref_service_cd_budget_poc_frc] where fl_name='fl_budget_C16')
+									 +  fl_budget_C18 *  (select multiplier from portal_redux.[ref_service_cd_budget_poc_frc] where fl_name='fl_budget_C18')
+									 +  fl_budget_C19 *  (select multiplier from portal_redux.[ref_service_cd_budget_poc_frc] where fl_name='fl_budget_C19')
+									 +  fl_uncat_svc *  (select multiplier from portal_redux.[ref_service_cd_budget_poc_frc] where fl_name='fl_uncat_svc') as decimal(9,0));
 
  update pps
  set filter_service_category_todate=td.filter_service_category_todate
@@ -745,16 +751,20 @@ group by id_payment_fact having count(*) > 1) q on q.id_payment_fact=pps.id_paym
 )   del on del.id_payment_fact=pps.id_payment_fact
 and del.id_placement_fact=pps.id_placement_fact
 and del.row_num > 1
+
+
 		
 ALTER TABLE [portal_redux].[placement_payment_services] ADD CONSTRAINT PK_placement_payment_services PRIMARY KEY CLUSTERED 
 (
 	[id_payment_fact] ASC
 )
 
+
 update statistics portal_redux.placement_payment_services;
 
 update portal_redux.procedure_flow
 set last_run_date=getdate()
 where procedure_nm='prod_build_placement_payment_services'
+
 
 end;

@@ -14,6 +14,10 @@ CREATE TABLE portal_redux.rate_referrals_scrn_in (
 	CONSTRAINT PK_rate_referrals_scrn_in PRIMARY KEY (start_date,county_cd,entry_point)
 );
 
+-- populate rate_referrals_scrn_in table
+
+BEGIN
+
 declare @startdate datetime=getdate()
 alter table portal_redux.rate_referrals_scrn_in NOCHECK CONSTRAINT ALL
 truncate table portal_redux.rate_referrals_scrn_in
@@ -50,6 +54,7 @@ join portal_redux.rate_referrals ref on ref.start_date=scr.start_date and ref.co
 
 								  
 
+
 alter table portal_redux.rate_referrals_scrn_in CHECK CONSTRAINT ALL
 
 declare @enddate datetime=getdate();
@@ -58,7 +63,10 @@ set tbl.last_build_date=getdate()
 		,tbl.row_count=(select count(*) from portal_redux.rate_referrals_scrn_in)
 		,tbl.load_time_mins=portal_redux.fnc_datediff_mis(@startdate,@enddate)
 from portal_redux.prtl_tables_last_update tbl
-where tbl_id=56;
+where tbl_id=56
+
+
+END;
 
 --select * from portal_redux.rate_referrals_scrn_in where county_cd=0 and entry_point=0 order by start_date
 --select *  from  portal_redux.rate_referrals  where county_cd=0 and entry_point=0  order by start_date

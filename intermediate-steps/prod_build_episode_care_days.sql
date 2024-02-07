@@ -15,15 +15,17 @@ CREATE TABLE portal_redux.episode_care_days (
 );
 
 
--- populatte episode_care_days table
+-- populate episode_care_days table
 
+BEGIN
 			declare @fystart int= 2000;
 			declare @fystop int= 2013;
 
 			set nocount on
 
-			if object_id('tempdb..#episodes') is not null
-				drop table #episodes
+			--if object_id('tempdb..#episodes') is not null
+			--	drop table #episodes
+			DROP TABLE IF EXISTS #episodes;
 
 			select  distinct
 						 rp.child
@@ -114,8 +116,9 @@ set care_day_cnt_prior_anniv=datediff(dd,iif(fy_start_date>=removal_dt,fy_start_
 where anniv_removal_dt is not null
 
 
-if object_id('tempdb..#care_day_count') is not null
-	drop table #care_day_count
+--if object_id('tempdb..#care_day_count') is not null
+--	drop table #care_day_count
+DROP TABLE IF EXISTS #care_day_count;
 
 create table #care_day_count(fiscal_yr int,years_in_care int
 ,age_removal int,age_exit int,cd_race int, cd_cnty int, excludes_7day int, excludes_nondcfs int,care_days int
@@ -139,12 +142,12 @@ select
 		, nd.excludes_nondcfs
   		, sum(rp.care_day_cnt_prior_anniv)    n_care_days
 from  #episodes rp
-	join prm_age_yrs yrs on yrs.match_age_yr=rp.age_yrs_removal
-	join prm_age_yrs yrs_exit on yrs_exit.match_age_yr=rp.age_yrs_exit
-	join prm_eth_census eth on eth.match_code=rp.cd_race_census and eth.cd_origin=rp.census_Hispanic_Latino_Origin_cd
-	join prm_cnty cnty on cnty.match_code=rp.county_cd
-	join prm_shortstay ss on ss.match_code=rp.flag_7day
-	join prm_nondcfs_custody nd on nd.match_code=rp.fl_nondcfs_custody
+	join portal_redux.prm_age_yrs yrs on yrs.match_age_yr=rp.age_yrs_removal
+	join portal_redux.prm_age_yrs yrs_exit on yrs_exit.match_age_yr=rp.age_yrs_exit
+	join portal_redux.prm_eth_census eth on eth.match_code=rp.cd_race_census and eth.cd_origin=rp.census_Hispanic_Latino_Origin_cd
+	join portal_redux.prm_cnty cnty on cnty.match_code=rp.county_cd
+	join portal_redux.prm_shortstay ss on ss.match_code=rp.flag_7day
+	join portal_redux.prm_nondcfs_custody nd on nd.match_code=rp.fl_nondcfs_custody
 group by 
 		  rp.sfy 
 		,rp.prior_year_service 
@@ -167,12 +170,12 @@ select
 		, nd.excludes_nondcfs
   		, sum(rp.care_day_cnt_post_anniv)    n_care_days
 from  #episodes rp
-	join prm_age_yrs yrs on yrs.match_age_yr=rp.age_yrs_removal
-	join prm_age_yrs yrs_exit on yrs_exit.match_age_yr=rp.age_yrs_exit
-	join prm_eth_census eth on eth.match_code=rp.cd_race_census and eth.cd_origin=rp.census_Hispanic_Latino_Origin_cd
-	join prm_cnty cnty on cnty.match_code=rp.county_cd
-	join prm_shortstay ss on ss.match_code=rp.flag_7day
-	join prm_nondcfs_custody nd on nd.match_code=rp.fl_nondcfs_custody
+	join portal_redux.prm_age_yrs yrs on yrs.match_age_yr=rp.age_yrs_removal
+	join portal_redux.prm_age_yrs yrs_exit on yrs_exit.match_age_yr=rp.age_yrs_exit
+	join portal_redux.prm_eth_census eth on eth.match_code=rp.cd_race_census and eth.cd_origin=rp.census_Hispanic_Latino_Origin_cd
+	join portal_redux.prm_cnty cnty on cnty.match_code=rp.county_cd
+	join portal_redux.prm_shortstay ss on ss.match_code=rp.flag_7day
+	join portal_redux.prm_nondcfs_custody nd on nd.match_code=rp.fl_nondcfs_custody
 group by 
 		  rp.sfy 
 		,rp.post_year_service 
@@ -246,3 +249,5 @@ group by
 		update  portal_redux.procedure_flow 
 		set last_run_date=getdate()
 		where ikey=21;
+
+END;

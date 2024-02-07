@@ -33,11 +33,12 @@ Substantiation and Recidivism. Child Maltreatment. Vol. 8, No. 4, 248–260.
 children across AFCARS and NCANDS
 **/
 --  exec portal_redux.prod_build_rate_care_day_maltreatment
+BEGIN
 
 declare @fystart int = 2000
 declare @fystop int = 2014
 truncate table  portal_redux.rate_care_day_maltreatment;
-insert into  portal_redux.rate_care_day_maltreatment(date_type,qry_type,fiscal_yr,county_cd
+insert into portal_redux.rate_care_day_maltreatment(date_type,qry_type,fiscal_yr,county_cd
 	,care_days,cnt_incidents,care_day_incident_rate)
 	select  0 date_type,2 qry_type
 				, cd.fiscal_yr
@@ -95,7 +96,8 @@ insert into  portal_redux.rate_care_day_maltreatment(date_type,qry_type,fiscal_y
 	 where age_yrs_exit=-99 and age_yrs_removal=-99  and cd_race=0 
 	 and exclude_7day=1 and exclude_trh=1  and exclude_nondcfs=1
 	 group by cd.fiscal_yr,cd.county_cd ,cnt_abuse
-	 order by cd.county_cd,fiscal_yr;
+	 order by cd.county_cd,fiscal_yr
 
+END;
 
  ---select * from portal_redux.rate_care_day_maltreatment where county_cd=0  order by fiscal_yr

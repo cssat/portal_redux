@@ -10,11 +10,11 @@ CREATE TABLE portal_redux.ooh_point_in_time_measures (
 	pk_gndr int NOT NULL,
 	cd_race int NOT NULL,
 	census_hispanic_latino_origin_cd int NOT NULL,
-	init_cd_plcm_setng int NULL,
+	init_cd_plcm_setng int NOT NULL,
 	long_cd_plcm_setng int NOT NULL,
-	county_cd int NULL,
-	int_match_param_key_mix int NULL,
-	int_match_param_key_census int NULL,
+	county_cd int NOT NULL,
+	int_match_param_key_mix int NOT NULL,
+	int_match_param_key_census int NOT NULL,
 	bin_dep_cd int NOT NULL,
 	max_bin_los_cd int NOT NULL,
 	bin_placement_cd int NOT NULL,
@@ -68,13 +68,12 @@ CREATE NONCLUSTERED INDEX idx_fl_w4 ON portal_redux.ooh_point_in_time_measures (
 -- populate ooh_point_in_time_measures table
 
 /***********************************************************  POINT IN TIME       **************************/
+
 begin
 
 	set nocount on
 
-
-						--if OBJECT_ID('tempDB..#evt') is not null drop table #evt
-                        DROP TABLE IF EXISTS #evt;
+						if OBJECT_ID('tempDB..#evt') is not null drop table #evt
 
 						SELECT evt.qry_type
 								, evt.[date_type]

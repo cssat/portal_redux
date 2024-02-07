@@ -5,9 +5,9 @@ CREATE TABLE portal_redux.prtl_pbcs2 (
 	cohort_begin_date datetime NOT NULL,
 	date_type int NOT NULL,
 	qry_type int NOT NULL,
-	int_match_param_key bigint NULL,
+	int_match_param_key bigint NOT NULL,
 	cd_sib_age_grp int NOT NULL,
-	cd_race_census int NULL,
+	cd_race_census int NOT NULL,
 	census_hispanic_latino_origin_cd int NOT NULL,
 	county_cd int NOT NULL,
 	filter_access_type int NOT NULL,
@@ -23,8 +23,8 @@ CREATE TABLE portal_redux.prtl_pbcs2 (
 	case_repeat_referral int NOT NULL,
 	cnt_case int NOT NULL,
 	nxt_ref_within_min_month int NOT NULL,
-	CONSTRAINT PK_prtl_pbcs2_1 PRIMARY KEY (cohort_begin_date,date_type,qry_type,filter_access_type,filter_allegation,filter_finding,cd_reporter_type,bin_ihs_svc_cd,initref,initfndref,case_founded_recurrence,nxt_ref_within_min_month) WITH (IGNORE_DUP_KEY = ON) ON [PRIMARY],
-	--CONSTRAINT prtl_pbcs2_cd_race_FK FOREIGN KEY (cd_race_census) REFERENCES portal_redux.ref_lookup_ethnicity_census(cd_race_census),
+	CONSTRAINT PK_prtl_pbcs2_1 PRIMARY KEY (cohort_begin_date,date_type,qry_type,int_match_param_key,filter_access_type,filter_allegation,filter_finding,cd_reporter_type,bin_ihs_svc_cd,initref,initfndref,case_founded_recurrence,nxt_ref_within_min_month),
+	CONSTRAINT prtl_pbcs2_cd_race_FK FOREIGN KEY (cd_race_census) REFERENCES portal_redux.ref_lookup_ethnicity_census(cd_race_census),
 	CONSTRAINT prtl_pbcs2_cd_reporter_type_FK FOREIGN KEY (cd_reporter_type) REFERENCES portal_redux.ref_filter_reporter_type(cd_reporter_type),
 	CONSTRAINT prtl_pbcs2_cd_sib_age_grpr_FK FOREIGN KEY (cd_sib_age_grp) REFERENCES portal_redux.ref_lookup_sib_age_grp(cd_sib_age_grp),
 	CONSTRAINT prtl_pbcs2_county_cd_FK FOREIGN KEY (county_cd) REFERENCES portal_redux.ref_lookup_county(county_cd),
@@ -54,7 +54,6 @@ begin
 	--	set @chstart = (select min_date_any  from ref_lookup_max_date where id=6)
 
 		select @chstart=min_date_any,@chend=dateadd(dd,-1,dateadd(yy,1,max_date_yr)) from portal_redux.ref_lookup_max_date where id=6;
-		SET @chend = '2014-01-01 00:00:00.000'; -- original value is NULL, USING substitute
 
 		if object_id('tempdb..#intakes') is not null drop table #intakes;
 
@@ -66,12 +65,10 @@ begin
 			,eps.ihs_begin_date)  asc) row_num
 			,case when eps.total_amt_paid > 0  then 1 else 2 end as bin_ihs_svc_cd
 			from portal_redux.tbl_intakes intk
-			join portal_redux.tbl_ihs_episodes eps on intk.id_intake_fact=eps.id_intake_fact
+			join  portal_redux.tbl_ihs_episodes eps on intk.id_intake_fact=eps.id_intake_fact
 			where fl_ihs_90_day=1 and fl_dlr=0
 			and intk.id_case>0
 			)
-
-
 		select distinct 
 			cd.[Year] as cohort_begin_date
 			, 0 as qry_type

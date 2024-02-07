@@ -6,20 +6,20 @@ CREATE TABLE portal_redux.prtl_poc3ab (
 	date_type int NOT NULL,
 	start_date datetime NOT NULL,
 	start_year int NOT NULL,
-	int_match_param_key bigint NULL,
+	int_match_param_key bigint NOT NULL,
 	bin_ihs_svc_cd int NOT NULL,
 	cd_reporter_type int NOT NULL,
 	filter_access_type int DEFAULT power((10),(5)) NOT NULL,
 	filter_allegation int DEFAULT power((10),(4)) NOT NULL,
 	filter_finding int DEFAULT power((10),(4)) NOT NULL,
 	cd_sib_age_group int NOT NULL,
-	cd_race_census int NULL,
+	cd_race_census int NOT NULL,
 	census_hispanic_latino_origin_cd int NOT NULL,
 	county_cd int NOT NULL,
 	cnt_start_date int NOT NULL,
 	cnt_opened int NOT NULL,
 	cnt_closed int NOT NULL,
-	CONSTRAINT PK_prtl_poc3ab_1 PRIMARY KEY (qry_type,date_type,start_date,bin_ihs_svc_cd,cd_reporter_type,filter_access_type,filter_allegation,filter_finding) WITH (IGNORE_DUP_KEY = ON) ON [PRIMARY],
+	CONSTRAINT PK_prtl_poc3ab_1 PRIMARY KEY (qry_type,date_type,start_date,int_match_param_key,bin_ihs_svc_cd,cd_reporter_type,filter_access_type,filter_allegation,filter_finding),
 	CONSTRAINT prtl_poc3ab_bin_ihs_svc_cd_FK FOREIGN KEY (bin_ihs_svc_cd) REFERENCES portal_redux.ref_filter_ihs_services(bin_ihs_svc_cd),
 	CONSTRAINT prtl_poc3ab_cd_race_FK FOREIGN KEY (cd_race_census) REFERENCES portal_redux.ref_lookup_ethnicity_census(cd_race_census),
 	CONSTRAINT prtl_poc3ab_cd_reporter_type_FK FOREIGN KEY (cd_reporter_type) REFERENCES portal_redux.ref_filter_reporter_type(cd_reporter_type),
@@ -43,7 +43,6 @@ begin
 
 	  set nocount on 		
 	  
-	  		
 		declare @chstart datetime
 		declare @chend datetime
 		declare @startLoop datetime
@@ -63,7 +62,7 @@ begin
 		set @chstart=@start_date;
 		set @startLoop=@chstart
 		set @cutoff_date = (select cutoff_date from portal_redux.ref_Last_DW_Transfer)
-		set @chend = (select distinct dateadd(dd,-1,[quarter]) from portal_redux.CALENDAR_DIM where TRY_CONVERT(DATE, @cutoff_date) =  TRY_CONVERT(DATE, CALENDAR_DATE))
+		set @chend = (select distinct dateadd(dd,-1,[quarter]) from portal_redux.CALENDAR_DIM where @cutoff_date = CALENDAR_DATE)
 
 
 			if OBJECT_ID('tempDB..#dates') is not null drop table #dates;
@@ -734,5 +733,11 @@ INCLUDE ([cnt_distinct_Intakes])
 
 	  --		select * from portal_redux.prtl_tables_last_update where tbl_id=3
 			--select count(*) from portal_redux.prtl_poc3ab
-	
+
+	DROP TABLE #dates
+	DROP TABLE #poc3_unq
+	DROP TABLE #poc3_frst
+	DROP TABLE #poc3_all
+	DROP TABLE #caseload
+
 end;

@@ -14,6 +14,10 @@ CREATE TABLE portal_redux.rate_placement_order_specific (
 );
 
 
+-- populate rate_placement_order_specific table
+
+BEGIN
+
 /**
 R0 is defined as follows:
 Numerator:  Households with at least 1 removal this month with no children already in episode this month
@@ -272,3 +276,8 @@ left join  (-- this is the denominator
 		order by refC.county_cd,start_date,nth_order
 
 alter table portal_redux.rate_placement_order_specific CHECK constraint ALL;
+
+DROP TABLE #scrn_in
+DROP TABLE #cases_intakes_placements
+
+END;

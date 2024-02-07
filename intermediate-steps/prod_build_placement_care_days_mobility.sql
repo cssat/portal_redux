@@ -1,6 +1,6 @@
 -- create placement_care_days_mobility table
 
--- DROP TABLE portal_redux.placement_care_days_mobility;
+DROP TABLE IF EXISTS portal_redux.placement_care_days_mobility;
 CREATE TABLE portal_redux.placement_care_days_mobility (
 	fiscal_yr int NOT NULL,
 	age_yrs_removal int NOT NULL,
@@ -22,11 +22,14 @@ CREATE TABLE portal_redux.placement_care_days_mobility (
 
 --populate placement_care_days_mobility table
 
+BEGIN
+
 DECLARE @fystart INT = 2000;
 DECLARE @fystop INT = 2013;
 
-IF OBJECT_ID('tempdb..#placements') IS NOT NULL
-	DROP TABLE #placements_new
+--IF OBJECT_ID('tempdb..#placements') IS NOT NULL
+--	DROP TABLE #placements_new
+DROP TABLE IF EXISTS #placements;
 
 SELECT rp.removal_dt
 	,rp.birthdate
@@ -189,8 +192,9 @@ CREATE NONCLUSTERED INDEX idx_3 ON #placements (
 	,[post_year_service]
 	)
 
-IF OBJECT_ID('tempdb..#care_day_count') IS NOT NULL
-	DROP TABLE #care_day_count
+--IF OBJECT_ID('tempdb..#care_day_count') IS NOT NULL
+--	DROP TABLE #care_day_count
+DROP TABLE IF EXISTS #care_day_count;
 
 CREATE TABLE #care_day_count (
 	fiscal_yr INT
@@ -255,14 +259,14 @@ SELECT rp.sfy fiscal_yr
 			ELSE 0
 			END) [group_cnt]
 FROM #placements rp
-JOIN prm_age_yrs yrs ON yrs.match_age_yr = rp.age_yrs_removal
-JOIN prm_age_yrs yrs_exit ON yrs_exit.match_age_yr = rp.age_yrs_exit
-JOIN prm_eth_census eth ON eth.match_code = rp.cd_race_census
+JOIN portal_redux.prm_age_yrs yrs ON yrs.match_age_yr = rp.age_yrs_removal
+JOIN portal_redux.prm_age_yrs yrs_exit ON yrs_exit.match_age_yr = rp.age_yrs_exit
+JOIN portal_redux.prm_eth_census eth ON eth.match_code = rp.cd_race_census
 	AND eth.cd_origin = rp.census_Hispanic_Latino_Origin_cd
-JOIN prm_cnty cnty ON cnty.match_code = rp.county_cd
-JOIN prm_shortstay ss ON ss.match_code = rp.flag_7day
-JOIN prm_trh trh ON trh.match_code = rp.flag_trh
-JOIN prm_nondcfs_custody nd ON nd.match_code = rp.fl_nondcfs_custody
+JOIN portal_redux.prm_cnty cnty ON cnty.match_code = rp.county_cd
+JOIN portal_redux.prm_shortstay ss ON ss.match_code = rp.flag_7day
+JOIN portal_redux.prm_trh trh ON trh.match_code = rp.flag_trh
+JOIN portal_redux.prm_nondcfs_custody nd ON nd.match_code = rp.fl_nondcfs_custody
 GROUP BY rp.sfy
 	,IIF(rp.prior_year_service > 10, 10, rp.prior_year_service)
 	,yrs.age_yr
@@ -319,14 +323,14 @@ SELECT rp.sfy fiscal_yr
 		ELSE 0
 		END) [group_cnt]
 FROM #placements rp
-JOIN prm_age_yrs yrs ON yrs.match_age_yr = rp.age_yrs_removal
-JOIN prm_age_yrs yrs_exit ON yrs_exit.match_age_yr = rp.age_yrs_exit
-JOIN prm_eth_census eth ON eth.match_code = rp.cd_race_census
+JOIN portal_redux.prm_age_yrs yrs ON yrs.match_age_yr = rp.age_yrs_removal
+JOIN portal_redux.prm_age_yrs yrs_exit ON yrs_exit.match_age_yr = rp.age_yrs_exit
+JOIN portal_redux.prm_eth_census eth ON eth.match_code = rp.cd_race_census
 	AND eth.cd_origin = rp.census_Hispanic_Latino_Origin_cd
-JOIN prm_cnty cnty ON cnty.match_code = rp.county_cd
-JOIN prm_shortstay ss ON ss.match_code = rp.flag_7day
-JOIN prm_trh trh ON trh.match_code = rp.flag_trh
-JOIN prm_nondcfs_custody nd ON nd.match_code = rp.fl_nondcfs_custody
+JOIN portal_redux.prm_cnty cnty ON cnty.match_code = rp.county_cd
+JOIN portal_redux.prm_shortstay ss ON ss.match_code = rp.flag_7day
+JOIN portal_redux.prm_trh trh ON trh.match_code = rp.flag_trh
+JOIN portal_redux.prm_nondcfs_custody nd ON nd.match_code = rp.fl_nondcfs_custody
 GROUP BY rp.sfy
 	,ISNULL(IIF(rp.post_year_service > 10, 10, rp.post_year_service), 0)
 	,yrs.age_yr
@@ -422,3 +426,5 @@ ORDER BY fiscal_yr
 UPDATE portal_redux.procedure_flow
 SET last_run_date = GETDATE()
 WHERE ikey = 20;
+
+END;

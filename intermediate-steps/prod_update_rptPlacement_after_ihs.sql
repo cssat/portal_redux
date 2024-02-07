@@ -1,3 +1,6 @@
+-- update rptPlacement after ihs
+
+BEGIN
 
 update tce
 set  bin_ihs_svc_cd =3
@@ -18,4 +21,6 @@ and tbl_origin_cd = 1 and bin_ihs_svc_cd <> 1
 
 update portal_redux.procedure_flow
 set last_run_date=getdate()
-where procedure_nm='prod_update_rptPlacement_after_ihs';
+where procedure_nm='prod_update_rptPlacement_after_ihs'
+
+END;

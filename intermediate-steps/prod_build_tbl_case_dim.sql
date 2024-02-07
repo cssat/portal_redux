@@ -1,7 +1,6 @@
 -- create tbl_case_dim table
--- need to run this in one query
 
---DROP TABLE portal_redux.tbl_case_dim;
+DROP TABLE IF EXISTS portal_redux.tbl_case_dim;
 CREATE TABLE portal_redux.tbl_case_dim (
     id_case        INT           NOT NULL,
     cd_case_type   INT           NULL,
@@ -17,7 +16,10 @@ CREATE TABLE portal_redux.tbl_case_dim (
     CONSTRAINT PK__tbl_case__0DA654C9FE7599FE PRIMARY KEY CLUSTERED (id_case ASC, dt_case_opn ASC, dt_case_cls ASC)
 );
 
+
 -- populate table
+-- need to run this in one query
+
 
 declare @BEGINDATE datetime
 Declare @ENDDATE datetime
@@ -38,7 +40,8 @@ SET @enddateINT  = CONVERT(INT, CONVERT(VARCHAR(10),@enddate,112))
 SET @BEGINDATEINT  = CONVERT(INT, CONVERT(VARCHAR(10),@BEGINDATE,112))
  --truncate table tbl_case_dim;
  
-if object_ID('tempDB..#cases1') is not null drop table #cases1; 
+--if object_ID('tempDB..#cases1') is not null drop table #cases1;
+DROP TABLE IF EXISTS #cases1;
 ---step 1: convert case dates from date/time to date
 --, select all rows of case_dim based on open and closed dates evaluated against date parameters
 select c.id_case
@@ -58,7 +61,8 @@ order by id_case
 --step 2: select the last closed date for each case 
 --and opn date where the status is ‘closed’ and records with out a cls date 
 --but with a current flag (others only reflect a case opening or other change in the record)
-if object_ID('tempDB..#cases2') is not null drop table #cases2; 
+--if object_ID('tempDB..#cases2') is not null drop table #cases2;
+DROP TABLE IF EXISTS #cases2;
 select distinct id_case,c.cd_case_type, c.case_type_txt,dt_case_opn, max(dt_case_cls) dt_case_cls,ID_LOCATION_DIM
 into #cases2
 from #cases1 c
@@ -73,15 +77,15 @@ where c.is_current = 1 and dt_case_cls is null
  
 truncate table portal_redux.tbl_case_dim; 
 
-INSERT INTO portal_redux.tbl_case_dim
-           (id_case
-           ,cd_case_type
-           ,tx_case_type
-           ,dt_case_opn
-           ,dt_case_cls
-           ,cseq
-           ,case_opn_days
-           ,tbl_refresh_dt)
+INSERT INTO [portal_redux].[tbl_case_dim]
+           ([id_case]
+           ,[cd_case_type]
+           ,[tx_case_type]
+           ,[dt_case_opn]
+           ,[dt_case_cls]
+           ,[cseq]
+           ,[case_opn_days]
+           ,[tbl_refresh_dt])
 
 
 select distinct c1.id_case, c2.cd_case_type,c2.case_type_txt,c1.dt_case_opn, isnull(c2.dt_case_cls,'12/31/9999')
@@ -100,9 +104,9 @@ set cd_region=q.CD_REGION
 from portal_redux.tbl_case_dim cd
 join (select id_case ,c1.DT_CASE_OPN,c1.DT_CASE_CLS,cd_region,cd_office,cd_cnty
 , ROW_NUMBER() over (partition by id_case,dt_case_opn order by dt_case_cls desc) as row_num
-from  #cases1 c1
-join  location_dim ld on ld.ID_LOCATION_DIM=c1.ID_LOCATION_DIM) q on q.ID_CASE=cd.id_case 
-	and q.row_num=1;
+from #cases1 c1
+join portal_redux.location_dim ld on ld.ID_LOCATION_DIM=c1.ID_LOCATION_DIM) q on q.ID_CASE=cd.id_case 
+		and q.row_num=1
 
 
 update statistics portal_redux.tbl_case_dim;

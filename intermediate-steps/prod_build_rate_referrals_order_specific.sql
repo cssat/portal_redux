@@ -14,6 +14,9 @@ CREATE TABLE portal_redux.rate_referrals_order_specific (
 	CONSTRAINT rate_referrals_order_specific_county_cd_FK FOREIGN KEY (county_cd) REFERENCES portal_redux.ref_lookup_county(county_cd)
 );
 
+-- populate rate_referrals_order_specific table
+
+BEGIN
 
 	if OBJECT_ID('tempDB..#referrals') is not null drop table #referrals;
 	select tce.* 
@@ -52,7 +55,7 @@ from 	 #referrals   curr  -- all referrals
 	join (select number nth_order from portal_redux.numbers) n on n.nth_order <=100 --in (1,2,3,4,5,6,7,8,9,10) (Joe Changed this for AR)
 				and curr.nth_order=n.nth_order-1
 	join (select distinct [month] from portal_redux.calendar_dim 
-			where calendar_date between '2000-01-01' and (select dateadd(m,-1,(select cutoff_date from portal_redux.ref_last_dw_transfer)))
+			where calendar_date between '2000-01-01' and (select dateadd(m,-1,(select cutoff_date from ref_last_dw_transfer)))
 			) mnth
 			on mnth.[month]>=curr.cohort_entry_date 
 				and (mnth.[month]<= cast(convert(varchar(10),nxt_rfrd_date,121) as datetime)
@@ -128,8 +131,12 @@ left join (select measurement_year,county_cd,sum(pop_cnt) tot_pop
 							group by measurement_year
 						) pop on measurement_year=year(ref.cohort_date) and pop.county_cd=ref.cd_cnty
 --where year(mnth.MONTH)=2010 and refc.county_cd=0
-order by refC.county_cd,mnth.[MONTH],n.nth_order;
+order by refC.county_cd,mnth.[MONTH],n.nth_order
+
+	DROP TABLE #referrals
+	DROP TABLE #nthOrderAtRiskHH
 		
+END;
 
 --select * from portal_redux.rate_referrals_order_specific order by county_cd,start_date,nth_order
 

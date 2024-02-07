@@ -1,5 +1,6 @@
 
-CREATE PROCEDURE [portal_redux].[sp_cache_pbcs2_insert_only](
+--DROP PROCEDURE portal_redux.sp_cache_pbcs2_insert_only;
+CREATE PROCEDURE portal_redux.[sp_cache_pbcs2_insert_only](
    @age_grouping_cd varchar(30)
 ,  @race_cd varchar(30)
 ,  @cd_county varchar(1000)
@@ -10,10 +11,6 @@ CREATE PROCEDURE [portal_redux].[sp_cache_pbcs2_insert_only](
 as
  set nocount on
  
-
-	
-
-
     declare @qry_id bigint;
     declare @mindate datetime;
     declare @maxdate datetime;
@@ -229,7 +226,7 @@ as
 
 
 
-			INSERT INTO [portal_redux].[cache_pbcs2_params]
+			INSERT INTO portal_redux.[cache_pbcs2_params]
 					(qry_id
 					, [age_grouping_cd]
 					,[cd_race_census]
@@ -262,7 +259,7 @@ as
 			end
 		else
 			begin
-				update [portal_redux].[cache_pbcs2_params]
+				update portal_redux.[cache_pbcs2_params]
 				set cnt_qry=cnt_qry + 1
 				where qry_id= @qry_id;
 			end
@@ -300,7 +297,7 @@ as
 			update cache
 			set in_cache=1,qry_id=pbcs2.qry_id
 			from #cachekeys cache
-			join [portal_redux].[cache_qry_param_pbcs2] pbcs2
+			join portal_redux.[cache_qry_param_pbcs2] pbcs2
 			on pbcs2.[int_all_param_key]=cache.int_hash_key
 
 
@@ -471,7 +468,21 @@ as
 
 						update statistics portal_redux.cache_qry_param_pbcs2;
 
-			end; -- not in cache			
+				
+		DROP TABLE #age
+		DROP TABLE #eth
+		DROP TABLE #cnty
+		DROP TABLE #rpt
+		DROP TABLE #acc
+		DROP TABLE #alg
+		DROP TABLE #fnd
+		DROP TABLE #prmlocdem
+		DROP TABLE #cachekeys
+		DROP TABLE #families
+		DROP TABLE #mytemp
+
+
+end; -- not in cache			
 
 
 
@@ -495,7 +506,7 @@ as
 			--					, ref_fnd.tx_finding as "Finding"
 			--					, [month] as "Months"
 			--					,[among_first_cmpt_rereferred] as "Among first referrals, percent that are re-referred"
-			--						from prtl.cache_pbcs2_aggr pbcs2
+			--						from portal_redux.cache_pbcs2_aggr pbcs2
 		 --					join #cachekeys ck on ck.int_hash_key=pbcs2.int_hash_key
 			--			join (select distinct cd_reporter_type from #rpt) rpt on rpt.cd_reporter_type=pbcs2.cd_reporter_type
 			--			join (select distinct cd_access_type from #acc) acc on acc.cd_access_type=pbcs2.cd_access_type

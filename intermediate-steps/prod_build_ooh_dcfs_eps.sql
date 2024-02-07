@@ -1,6 +1,6 @@
 -- create ooh_dcfs_eps table
 
- DROP TABLE portal_redux.ooh_dcfs_eps;
+DROP TABLE IF EXISTS portal_redux.ooh_dcfs_eps;
 CREATE TABLE portal_redux.ooh_dcfs_eps (
 	cohort_entry_year datetime NOT NULL,
 	cohort_entry_month datetime NOT NULL,
@@ -96,10 +96,9 @@ begin
 		select @cutoff_date=cutoff_date from portal_redux.ref_Last_DW_Transfer	
 		set @start_date = '2000-01-01'
 
-		
-		SELECT * FROM portal_redux.rptPlacement rp;
 
-			if OBJECT_ID('tempDB..#eps') is not null drop table #eps
+			--if OBJECT_ID('tempDB..#eps') is not null drop table #eps
+			DROP TABLE IF EXISTS #eps;
 			select  distinct
 					  cd.[Year]  as cohort_entry_year
 					, cd.[Month] as cohort_entry_month
@@ -131,12 +130,7 @@ begin
 					, 0 as fl_exit_over_17
 					, rpt.pk_gndr
 					, (coalesce(rpt.cd_race_census,7)) as cd_race_census
-					, (coalesce(CASE WHEN rpt.census_Hispanic_Latino_Origin_cd = 'Y' THEN 1
-								WHEN rpt.census_Hispanic_Latino_Origin_cd = 'N' THEN 2
-								ELSE 5 END, 5)) as census_Hispanic_Latino_Origin_cd
-					--, CASE WHEN rpt.census_Hispanic_Latino_Origin_cd = 'Y' THEN 1
-					--	WHEN rpt.census_Hispanic_Latino_Origin_cd = 'N' THEN 2
-					--	ELSE 5 END as census_Hispanic_Latino_Origin_cd
+					, (coalesce(rpt.census_Hispanic_Latino_Origin_cd,5)) as census_Hispanic_Latino_Origin_cd
 					, (rpt.init_cd_plcm_setng) as init_cd_plcm_setng
 					, (rpt.long_cd_plcm_setng)  as long_cd_plcm_setng
 					, removal_county_cd
@@ -144,9 +138,7 @@ begin
 					, (cast(power(10.0,8) + 
 					  (power(10.0,7) * coalesce(ageEntry.cdc_census_mix_age_cd,0)) + 
 						(power(10.0,6) * coalesce(rpt.cd_race_census,7)) +
-							(power(10.0,5) * coalesce(CASE WHEN rpt.census_Hispanic_Latino_Origin_cd = 'Y' THEN 1
-								WHEN rpt.census_Hispanic_Latino_Origin_cd = 'N' THEN 2
-								ELSE 5 END, 5)) + 
+							(power(10.0,5) * coalesce(rpt.census_Hispanic_Latino_Origin_cd,5)) + 
 								(power(10.0,4) * coalesce(rpt.pk_gndr,3)) + 
 									(power(10.0,3) * rpt.init_cd_plcm_setng) +
 										(power(10.0,2) * rpt.long_cd_plcm_setng) + 
@@ -155,9 +147,7 @@ begin
 					, (cast(power(10.0,8) + 
 					  (power(10.0,7) * coalesce(AgeEntry.census_child_group_cd,0)) + 
 						(power(10.0,6) * coalesce(rpt.cd_race_census,7)) +
-							(power(10.0,5) * coalesce(CASE WHEN rpt.census_Hispanic_Latino_Origin_cd = 'Y' THEN 1
-								WHEN rpt.census_Hispanic_Latino_Origin_cd = 'N' THEN 2
-								ELSE 5 END, 5)) + 
+							(power(10.0,5) * coalesce(rpt.census_Hispanic_Latino_Origin_cd,5)) + 
 								(power(10.0,4) * coalesce(rpt.pk_gndr,3)) + 
 									(power(10.0,3) * rpt.init_cd_plcm_setng) +
 										(power(10.0,2) * rpt.long_cd_plcm_setng) + 
@@ -166,9 +156,7 @@ begin
 					, (cast(power(10.0,8) + 
 					  (power(10.0,7) * coalesce(ageentry.developmental_age_cd,0)) + 
 						(power(10.0,6) * coalesce(rpt.cd_race_census,7)) +
-							(power(10.0,5) * coalesce(CASE WHEN rpt.census_Hispanic_Latino_Origin_cd = 'Y' THEN 1
-								WHEN rpt.census_Hispanic_Latino_Origin_cd = 'N' THEN 2
-								ELSE 5 END, 5)) + 
+							(power(10.0,5) * coalesce(rpt.census_Hispanic_Latino_Origin_cd,5)) + 
 								(power(10.0,4) * coalesce(rpt.pk_gndr,3)) + 
 									(power(10.0,3) * rpt.init_cd_plcm_setng) +
 										(power(10.0,2) * rpt.long_cd_plcm_setng) + 
@@ -265,7 +253,7 @@ begin
 				,cd_discharge_type=ex.cd_discharge_type
 				,discharge_type=ex.discharge_type
 --		select  removal_dt,Federal_Discharge_Date ,dateadd(yy,18,birthdate)  	from #eps
-		from ref_lookup_cd_discharge_type_exits ex
+		from portal_redux.ref_lookup_cd_discharge_type_exits ex
 		where  ex.cd_discharge_type=5
 		and ((dateadd(yy,18,birthdate) <  Federal_Discharge_Date and federal_discharge_date<> '12/31/9999' )
 		or (dateadd(yy,18,birthdate) < (select cutoff_date from portal_redux.ref_last_dw_transfer) and federal_discharge_date = '12/31/9999' ))
@@ -342,7 +330,8 @@ begin
 --  select child,removal_dt,count(*) from #eps group by child,removal_dt having count(*) > 1
 
 
-		if object_ID('tempDB..#nondcfs') is not null drop table #nondcfs;
+		--if object_ID('tempDB..#nondcfs') is not null drop table #nondcfs;
+		DROP TABLE IF EXISTS #nondcfs;
 		select distinct eps.id_removal_episode_fact,eps.child,null as bin_los_cd,eps.removal_dt,eps.federal_discharge_date
 				,dcfs.cust_begin
 				,iif(dcfs.cust_end='12/31/9999' 
@@ -364,7 +353,8 @@ begin
 
 		
 	-- begin split segments
-		if object_ID('tempDB..#tmp') is not null drop table #tmp
+		--if object_ID('tempDB..#tmp') is not null drop table #tmp
+		DROP TABLE IF EXISTS #tmp;
 		create table #tmp
 		( id_removal_episode_fact int
 			,removal_dt datetime
@@ -447,7 +437,8 @@ begin
 		where CALENDAR_DATE=federal_discharge_date
 
 		
-		if object_ID('tempDB..#bkp_eps') is not null drop table #bkp_eps;
+		--if object_ID('tempDB..#bkp_eps') is not null drop table #bkp_eps;
+		DROP TABLE IF EXISTS #bkp_eps;
 		select 	tmp.entry_year_date as cohort_entry_year
       , tmp.entry_month_date as cohort_entry_month
       , tmp.exit_year_date as  cohort_exit_year
@@ -530,7 +521,8 @@ begin
 		join #tmp tmp on ae.id_removal_episode_fact=tmp.id_removal_episode_fact 
 
 	
-		if object_ID('tempDB..#dcfs_alleps') is not null drop table #dcfs_alleps;
+		--if object_ID('tempDB..#dcfs_alleps') is not null drop table #dcfs_alleps;
+		DROP TABLE IF EXISTS #dcfs_alleps;
 		select distinct
 				 ae.cohort_entry_year
 				, ae.cohort_entry_month
@@ -618,7 +610,8 @@ begin
 			from #bkp_eps ae;
 
 
-		if object_id('tempDB..#age') is not null drop table #age;
+		--if object_id('tempDB..#age') is not null drop table #age;
+		DROP TABLE IF EXISTS #age;
 		select id_removal_episode_fact,child,removal_dt,birthdate,federal_discharge_date
 		, portal_redux.fnc_datediff_mos(birthdate,federal_discharge_date) [age_mo]
 		into #age
@@ -846,7 +839,7 @@ CREATE NONCLUSTERED INDEX idx_tmp_33 on #dcfs_alleps (id_removal_episode_fact,[r
 						join #dcfs_alleps  tce on 
 						 tce.child=aoc.FAMLINKID
 							and dateadd(dd,79,aoc.petition_date) >= dateadd(dd,-79,dateadd(yy,-1,tce.removal_dt ))
-									and dateadd(dd,79,aoc.petition_date) < isnull(tce.federal_discharge_date,(select cutoff_date from portal_redux.ref_last_dw_transfer))
+									and dateadd(dd,79,aoc.petition_date) < isnull(tce.federal_discharge_date,(select cutoff_date from ref_last_dw_transfer))
 						and petition ='DEPENDENCY PETITION' 
 						where tce.bin_dep_cd is null
 				) q on q.id_removal_episode_fact=rpt.id_removal_episode_fact  
@@ -1009,4 +1002,5 @@ update portal_redux.prtl_tables_last_update
 where tbl_id=39
 
 update statistics portal_redux.ooh_dcfs_eps;
+
 end;

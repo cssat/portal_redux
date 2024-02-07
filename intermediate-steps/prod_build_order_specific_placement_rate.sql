@@ -2,7 +2,7 @@
 
 DROP TABLE IF EXISTS portal_redux.rate_placement_order_specific;
 CREATE TABLE portal_redux.rate_placement_order_specific (
-	date_type int NOT NULL,
+	date_type int NOT NULL
 	qry_type int NOT NULL,
 	cohort_date datetime NOT NULL,
 	nth_order int NOT NULL,
@@ -13,6 +13,9 @@ CREATE TABLE portal_redux.rate_placement_order_specific (
 	CONSTRAINT PK_rate_placement_order_specific PRIMARY KEY (date_type,qry_type,cohort_date,nth_order,county_cd)
 );
 
+-- populate rate_placement_order_specific table
+
+BEGIN
 
 IF OBJECT_ID('tempDB..#cases_from_intakes_placements') IS NOT NULL
 	DROP TABLE #cases_from_intakes_placements
@@ -160,4 +163,9 @@ LEFT JOIN (
 WHERE mnth.cohort_date >= '2004-01-01'
 ORDER BY cnty.county_cd
 	,number
-	,mnth.cohort_date;
+	,mnth.cohort_date
+
+	DROP TABLE #cases_from_intakes_placements
+	DROP TABLE #case_placement_rankings
+
+END;

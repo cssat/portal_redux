@@ -1,9 +1,3 @@
-
-
-
-
-
-
 -- create cache_pbcp5_aggr table
 
 DROP TABLE IF EXISTS portal_redux.cache_pbcp5_aggr;
@@ -620,6 +614,7 @@ CREATE TABLE portal_redux.cache_qry_param_poc1ab_entries (
 
 
 --  @prm_procedure_id is ID from ref_lookup_max_date :  0 means run all
+
 begin
 	declare @loop int
 	declare @date varchar(50)
@@ -651,8 +646,8 @@ begin
 	declare @starttime datetime=getdate();
 	declare @endtime datetime=getdate();
 
-    declare @prm_procedure_id int;
-    set @prm_procedure_id = 0;
+	DECLARE @prm_procedure_id INT
+	SET @prm_procedure_id = 0
 			
 	set @procedure_id=@prm_procedure_id
 	set @flag_run_all_procedures=0;	
@@ -703,8 +698,8 @@ begin
 
 			--if @procedure_id=19
 			--	begin
-			--		IF OBJECT_ID (N'portal_redux.PK_cache_poc1ab_aggr', N'PK') IS NOT NULL
-			--			ALTER TABLE portal_redux.cache_poc1ab_aggr 
+			--		IF OBJECT_ID (N'prtl.PK_cache_poc1ab_aggr', N'PK') IS NOT NULL
+			--			ALTER TABLE prtl.cache_poc1ab_aggr 
 			--			DROP CONSTRAINT 	PK_cache_poc1ab_aggr;
 			--	end
 			
@@ -763,8 +758,8 @@ begin
 					
 				--if @procedure_id=19
 				--begin
-				--	IF OBJECT_ID (N'portal_reduxPK_cache_poc1ab_aggr', N'PK') IS NULL
-				--		ALTER TABLE portal_reduxcache_poc1ab_aggr 
+				--	IF OBJECT_ID (N'prtl.PK_cache_poc1ab_aggr', N'PK') IS NULL
+				--		ALTER TABLE prtl.cache_poc1ab_aggr 
 				--		ADD CONSTRAINT [PK_cache_poc1ab_aggr] PRIMARY KEY CLUSTERED (
 				--					[qry_type] ASC,
 				--					[date_type] ASC,
@@ -793,4 +788,8 @@ begin
 					set @loop+=1;
 			end;
 	 end;
+
+	DROP TABLE #params
+	DROP TABLE #procs
+
 end;

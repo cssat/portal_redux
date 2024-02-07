@@ -10,7 +10,7 @@ EXEC portal_redux.sp_ia_safety
 , @filter_finding = '0';
 
 
-CREATE PROCEDURE [portal_redux].[sp_ia_safety](
+CREATE PROCEDURE portal_redux.[sp_ia_safety](
    @date varchar(3000)
 ,  @age_grouping_cd varchar(30)
 ,  @race_cd varchar(30)
@@ -21,6 +21,7 @@ CREATE PROCEDURE [portal_redux].[sp_ia_safety](
 , @filter_finding varchar(30)
 , @fl_return_results bit = 1 )
 as
+BEGIN
  set nocount on
 
  
@@ -39,7 +40,7 @@ as
 
 
 	select  @mindate=min_date_any,@maxdate=max_date_any ,@minmonthstart=min_date_any,@maxmonthstart=max_date_any
-	from portal_redux.ref_lookup_max_date where procedure_name='sp_ia_safety'
+	from  portal_redux.ref_lookup_max_date where procedure_name='sp_ia_safety'
    
 
    
@@ -235,7 +236,7 @@ as
 
 
 
-			INSERT INTO [portal_redux].[cache_pbcs2_params]
+			INSERT INTO portal_redux.[cache_pbcs2_params]
 					(qry_id
 					, [age_grouping_cd]
 					,[cd_race_census]
@@ -268,7 +269,7 @@ as
 			end
 		else
 			begin
-				update [portal_redux].[cache_pbcs2_params]
+				update portal_redux.[cache_pbcs2_params]
 				set cnt_qry=cnt_qry + 1
 				where qry_id= @qry_id;
 			end
@@ -306,7 +307,7 @@ as
 			update cache
 			set in_cache=1,qry_id=pbcs2.qry_id
 			from #cachekeys cache
-			join [portal_redux].[cache_qry_param_pbcs2] pbcs2
+			join portal_redux.[cache_qry_param_pbcs2] pbcs2
 			on pbcs2.[int_all_param_key]=cache.int_hash_key
 
 
@@ -523,3 +524,17 @@ if @fl_return_results = 1
 								, pbcs2.cd_allegation
 								, pbcs2.cd_finding
 								, pbcs2.month;
+
+		DROP TABLE #age
+		DROP TABLE #eth
+		DROP TABLE #cnty
+		DROP TABLE #rpt
+		DROP TABLE #acc
+		DROP TABLE #alg
+		DROP TABLE #fnd
+		DROP TABLE #prmlocdem
+		DROP TABLE #cachekeys
+		--DROP TABLE #families
+		--DROP TABLE #mytemp
+
+END;

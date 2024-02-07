@@ -16,6 +16,9 @@ CREATE TABLE portal_redux.rate_referrals (
 	CONSTRAINT rate_referrals_screened_in_county_cd_FK FOREIGN KEY (county_cd) REFERENCES portal_redux.ref_lookup_county(county_cd)
 );
 
+-- populate rate_referrals table
+
+BEGIN
 
 		declare @startdate datetime=getdate()
 		alter table portal_redux.rate_referrals NOCHECK CONSTRAINT ALL
@@ -61,7 +64,9 @@ set tbl.last_build_date=getdate()
 		,tbl.row_count=(select count(*) from portal_redux.rate_referrals)
 		,tbl.load_time_mins=portal_redux.fnc_datediff_mis(@startdate,@enddate)
 from portal_redux.prtl_tables_last_update tbl
-where tbl_id=55;
+where tbl_id=55
+
+END;
 
 ----  select * from portal_redux.rate_referrals where  county_cd=0 and start_date='2010-01-01'  order by entry_point,start_date
 --select start_date,sum(cnt_referrals)  from portal_redux.rate_referrals  

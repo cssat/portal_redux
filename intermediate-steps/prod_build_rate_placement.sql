@@ -16,6 +16,9 @@ CREATE TABLE portal_redux.rate_placement (
 );
 
 
+--  populate rate_placement table
+
+BEGIN
 
 alter table portal_redux.rate_placement  NOCHECK CONSTRAINT ALL;
 
@@ -75,3 +78,5 @@ alter table portal_redux.rate_placement  CHECK CONSTRAINT ALL;
 
 --   select * from portal_redux.rate_placement where entry_point=0 and county_cd=0
 --  select * from portal_redux.rate_referrals_scrn_in where entry_point=0 and county_cd=0
+
+END;

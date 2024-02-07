@@ -1,6 +1,6 @@
 -- create WRK_nonDCFS_All
 
---DROP TABLE portal_redux.WRK_nonDCFS_All;
+DROP TABLE IF EXISTS portal_redux.WRK_nonDCFS_All;
 CREATE TABLE portal_redux.WRK_nonDCFS_All (
     ID_PRSN                INT          NULL,
     CUST_BEGIN             DATETIME     NULL,
@@ -15,10 +15,12 @@ CREATE TABLE portal_redux.WRK_nonDCFS_All (
 
 --populate WRK_nonDCFS_All table
 
-/****** Object:  StoredProcedure portal_redux.prod_build_WRK_NonDCFS    Script Date: 9/12/2019 12:06:01 PM ******/
+
+/****** Object:  StoredProcedure [portal_redux].[prod_build_WRK_NonDCFS]    Script Date: 9/12/2019 12:06:01 PM ******/
 SET ANSI_NULLS ON
 
 SET QUOTED_IDENTIFIER ON
+
 
 /*****************************************************************************************************************/
 -- Script Title: WRK_nonDCFS.sql
@@ -26,10 +28,9 @@ SET QUOTED_IDENTIFIER ON
 -- CHANGES  --- DATE:  BY:  Description:
 -- DATE: 2012-08-02  BY: J.Messerly Description: ADDED FL_VOID=0 
 /*****************************************************************************************************************/
-
 BEGIN
-	IF object_ID('tempDB..#Auth') IS NOT NULL
-		DROP TABLE #Auth;
+	--IF object_ID('tempDB..#Auth') IS NOT NULL DROP TABLE #Auth;
+	DROP TABLE IF EXISTS #Auth;
 
 	SELECT DISTINCT ID_PLACEMENT_CARE_AUTH_FACT
 		,ID_PLCMNT_CARE_AUTHORITY
@@ -190,8 +191,9 @@ BEGIN
 	SET cust_end = '12/31/9999'
 	WHERE cust_end IS NULL;
 
-	IF object_ID('tempDB..#nondcfs') IS NOT NULL
-		DROP TABLE #nondcfs;
+	--IF object_ID('tempDB..#nondcfs') IS NOT NULL
+	--	DROP TABLE #nondcfs;
+	DROP TABLE IF EXISTS #nondcfs;
 
 	SELECT *
 		,row_number() OVER (
@@ -213,8 +215,9 @@ BEGIN
 	ORDER BY id_prsn
 		,CD_PLACEMENT_CARE_AUTH
 
-	IF object_ID('tempDB..#mult') IS NOT NULL
-		DROP TABLE #mult;
+	--IF object_ID('tempDB..#mult') IS NOT NULL
+	--	DROP TABLE #mult;
+	DROP TABLE IF EXISTS #mult;
 
 	SELECT *
 	INTO #mult
@@ -227,8 +230,9 @@ BEGIN
 		,CD_PLACEMENT_CARE_AUTH
 		,cust_asc
 
-	IF object_ID('tempDB..#unq') IS NOT NULL
-		DROP TABLE #unq;
+	--IF object_ID('tempDB..#unq') IS NOT NULL
+	--	DROP TABLE #unq;
+	DROP TABLE IF EXISTS #unq;
 
 	SELECT *
 	INTO #unq
@@ -283,13 +287,13 @@ BEGIN
 	TRUNCATE TABLE portal_redux.WRK_nonDCFS_All;
 
 	INSERT INTO portal_redux.WRK_nonDCFS_All
-	SELECT ID_PRSN
-		,CUST_BEGIN
-		,CUST_END
-		,backtoDCFS
-		,CD_PLACEMENT_CARE_AUTH
-		,PLACEMENT_CARE_AUTH
-		,nondcfs_mark
+	SELECT [ID_PRSN]
+		,[CUST_BEGIN]
+		,[CUST_END]
+		,[backtoDCFS]
+		,[CD_PLACEMENT_CARE_AUTH]
+		,[PLACEMENT_CARE_AUTH]
+		,[nondcfs_mark]
 		,cast(convert(VARCHAR(10), getdate(), 121) AS DATETIME)
 	FROM #unq
 	ORDER BY id_prsn

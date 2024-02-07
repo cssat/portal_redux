@@ -1,6 +1,6 @@
 -- create tbl_intakes table
 
---DROP TABLE IF EXISTS portal_redux.tbl_intakes;
+DROP TABLE IF EXISTS portal_redux.tbl_intakes;
 CREATE TABLE portal_redux.tbl_intakes (
     id_intake_fact                      INT           NOT NULL,
     id_case                             INT           NOT NULL,
@@ -115,7 +115,6 @@ CREATE NONCLUSTERED INDEX idx_783ld4kg
 
 
 
-
 --populate table
 
 begin	
@@ -128,27 +127,25 @@ begin
 			declare @chstart datetime
 			declare @chend datetime
 			declare @cutoff_date datetime
-            DECLARE @debug SMALLINT
+
+			DECLARE @debug SMALLINT
+			SET @debug = 0
 
 			set @startDate= '01/01/1997'  
 			set @cutoff_date=(select cutoff_date from portal_redux.ref_last_dw_transfer)
 			set  @endDate=@cutoff_date
 			set @chstart=@startDate;
 
-
 		
-			set @chstart = @startDate
-            SET @debug = 0
+			set @chstart = @startDate 
 
 
 
-	
-
-			
 		--	if object_id(N'U',N'#referrals') is not null drop table #referrals;
 			-- select distinct cases during the time frame and get closest investigative/assessment assignment id
 			
-			if object_id('tempdb..#cte_allg') is not null drop table  #cte_allg;
+			--if object_id('tempdb..#cte_allg') is not null drop table  #cte_allg;
+			DROP TABLE IF EXISTS #cte_allg;
 			-- get the investigation ID's where they are populated in allegation_fact
 			select distinct 
 							ca.id_access_report
@@ -180,7 +177,8 @@ begin
 				and  ca.DT_ACCESS_RCVD >  '1996-12-31'
 				
 		
-		if object_id('tempdb..#referrals') is not null drop table  #referrals;
+		--if object_id('tempdb..#referrals') is not null drop table  #referrals;
+		DROP TABLE IF EXISTS #referrals;
 			-- create table #referrals
 			select   
 				 inf.id_intake_fact
@@ -290,7 +288,7 @@ begin
 					on itd.id_intake_type_dim = inf.id_intake_type_dim
 		left join portal_redux.intake_attribute_dim iad on iad.id_intake_attribute_dim=inf.id_intake_attribute_dim
 		left join [geog].[zip_boundaries_wa] zb2 on  zb2.zip=ca.intake_zip 
-		left join ref_lookup_county cnty on cnty.countyfips=zb2.countyfips
+		left join portal_redux.ref_lookup_county cnty on cnty.countyfips=zb2.countyfips
 		left join  ( -- safety assessment worker office
 					select    saf.id_intake_fact
 							, saf.id_safety_assessment_fact
@@ -324,7 +322,8 @@ begin
 		-- 1	Case	7	In Home Services	5	CFWS
 		-- 1	Case	7	In Home Services	8	FRS
 		-- 1	Case	7	In Home Services	9	FVS
-		if object_id('tempDB..#cte_ihs_assgn') is not null drop table #cte_ihs_assgn
+		--if object_id('tempDB..#cte_ihs_assgn') is not null drop table #cte_ihs_assgn
+		DROP TABLE IF EXISTS #cte_ihs_assgn;
 		select asf.id_case
 						,intk.id_intake_fact
 						,asf.ID_ASSIGNMENT_FACT
@@ -514,7 +513,7 @@ begin
 								then close_assgn_end_dt
 								else
 									null end
-			from  #referrals intk, ref_last_dw_transfer
+			from  #referrals intk, portal_redux.ref_last_dw_transfer
 			where cd_final_decision=1 and inv_ass_stop is null
 			and (CD_ACCESS_TYPE= 2 or (CD_ACCESS_TYPE in (1,4) 
 					and datediff(dd,inv_ass_start,cutoff_date) >= 183))
@@ -583,19 +582,14 @@ begin
 --------------------------------------------------------------------------------------------------------------------------------------------PART 2 HEAD OF HOUSEHOLD
 	-- FIRST FIND PARENT MOTHER FIRST FROM ALLEGATION_FACT/ RELATIONSHIP_DIM
 		--loh
-		
 			update intk
 			set 	ID_PEOPLE_DIM_HH=pd.id_people_dim
 				,ID_PRSN_HH=pd.ID_PRSN
 				,pk_gndr=case when pd.CD_GNDR = 'F' then 1 when pd.CD_GNDR='M' then 2 else 3 end
 				,DT_BIRTH=pd.DT_BIRTH
-				,IS_CURRENT=pd.IS_CURRENT				
-				,cd_race_census=pd.cd_race
-				,census_hispanic_latino_origin_cd= CASE
-					WHEN pd.cd_hspnc = 'Y' THEN 1
-					WHEN pd.CD_HSPNC = 'N' THEN 2
-					ELSE 5
-					END
+				,IS_CURRENT=pd.IS_CURRENT
+				,cd_race_census=pd.cd_race_census
+				,census_hispanic_latino_origin_cd=pd.census_hispanic_latino_origin_cd 
 				,fl_hh_is_mother=1
 			from  #referrals intk
 			join portal_redux.ALLEGATION_FACT alf on alf.ID_INTAKE_FACT=intk.ID_INTAKE_FACT
@@ -612,16 +606,12 @@ begin
 				,pk_gndr=case when q.CD_GNDR = 'F' then 1 when q.CD_GNDR='M' then 2 else 3 end
 				,DT_BIRTH=q.DT_BIRTH
 				,IS_CURRENT=q.IS_CURRENT
-				,cd_race_census=q.cd_race
-				,census_hispanic_latino_origin_cd = CASE
-					WHEN q.cd_hspnc = 'Y' THEN 1
-					WHEN q.CD_HSPNC = 'N' THEN 2
-					ELSE 5
-					END
+				,cd_race_census=q.cd_race_census
+				,census_hispanic_latino_origin_cd=q.census_hispanic_latino_origin_cd 
 				,fl_hh_is_mother=case when CD_GNDR='F' then 1 else 0 end
 		from  #referrals intk
-		join (select ink.id_intake_fact,pedCur.id_people_dim,pedCur.ID_PRSN,pedCur.CD_GNDR,pedCur.DT_BIRTH,pedCur.IS_CURRENT,pedCur.cd_race
-				,pedCur.CD_HSPNC 
+		join (select ink.id_intake_fact,pedCur.id_people_dim,pedCur.ID_PRSN,pedCur.CD_GNDR,pedCur.DT_BIRTH,pedCur.IS_CURRENT,pedCur.cd_race_census
+				,pedCur.census_hispanic_latino_origin_cd
 					,ROW_NUMBER() over (partition by ink.id_intake_fact order by ink.ID_INTAKE_FACT,isnull(pedCur.CD_GNDR,'Z') asc) as gndr_sort
 				from  #referrals ink
 				 join portal_redux.INTAKE_PARTICIPANT_FACT ipf
@@ -653,16 +643,12 @@ begin
 				,pk_gndr=case when q.CD_GNDR = 'F' then 1 when q.CD_GNDR='M' then 2 else 3 end
 				,DT_BIRTH=q.DT_BIRTH
 				,IS_CURRENT=q.IS_CURRENT
-				,cd_race_census=q.cd_race
-				,census_hispanic_latino_origin_cd = CASE
-					WHEN q.cd_hspnc = 'Y' THEN 1
-					WHEN q.CD_HSPNC = 'N' THEN 2
-					ELSE 5
-					END
+				,cd_race_census=q.cd_race_census
+				,census_hispanic_latino_origin_cd=q.census_hispanic_latino_origin_cd 
 				,fl_hh_is_mother=case when CD_GNDR='F' then 1 else 0 end
 		from  #referrals intk
 		join (select ink.id_intake_fact,pedCur.id_people_dim,pedCur.ID_PRSN,pedCur.CD_GNDR,pedCur.DT_BIRTH,pedCur.IS_CURRENT
-		,pedCur.cd_race,pedCur.CD_HSPNC
+		,pedCur.cd_race_census,pedCur.census_hispanic_latino_origin_cd
 					,ROW_NUMBER() over (partition by ink.id_intake_fact order by ink.ID_INTAKE_FACT,isnull(pedCur.CD_GNDR,'Z') asc) as gndr_sort
 				from  #referrals ink
 				 join portal_redux.INTAKE_PARTICIPANT_FACT ipf
@@ -687,16 +673,12 @@ begin
 				,pk_gndr=case when q.CD_GNDR = 'F' then 1 when q.CD_GNDR='M' then 2 else 3 end
 				,DT_BIRTH=q.DT_BIRTH
 				,IS_CURRENT=q.IS_CURRENT
-				,cd_race_census=q.cd_race
-				,census_hispanic_latino_origin_cd = CASE
-					WHEN q.cd_hspnc = 'Y' THEN 1
-					WHEN q.CD_HSPNC = 'N' THEN 2
-					ELSE 5
-					END
+				,cd_race_census=q.cd_race_census
+				,census_hispanic_latino_origin_cd=q.census_hispanic_latino_origin_cd 
 				,fl_hh_is_mother=case when q.CD_GNDR='F' then 1 else 0 end
 		from  #referrals intk
 		join (select ink.id_intake_fact,pedCur.id_people_dim,pedCur.ID_PRSN,pedCur.CD_GNDR,pedCur.DT_BIRTH,pedCur.IS_CURRENT
-		,pedCur.cd_race,ped.CD_HSPNC 
+		,pedCur.cd_race_census,ped.census_hispanic_latino_origin_cd
 					,ROW_NUMBER() over (partition by ink.id_intake_fact order by ink.ID_INTAKE_FACT,isnull(pedCur.CD_GNDR,'Z') asc) as gndr_sort
 				from  #referrals ink
 				 join portal_redux.INTAKE_PARTICIPANT_FACT ipf
@@ -723,7 +705,8 @@ begin
 		
 		---------------------------------------------------------------------------------------------- IDENTIFY CHILDREN
 	
-		if object_ID('tempDB..#household_children') is not null drop table #household_children
+		--if object_ID('tempDB..#household_children') is not null drop table #household_children
+		DROP TABLE IF EXISTS #household_children;
 		select distinct
 			 intk.id_case
 			,intk.id_intake_fact 
@@ -796,6 +779,7 @@ begin
 
 
 		if object_ID('tempDB..#household_children_aggr') is not null drop table #household_children_aggr
+		DROP TABLE IF EXISTS #household_children_aggr;
 		select id_intake_fact
 			,count(distinct id_prsn_child) as cnt_child
 			,sum(case when age_at_referral_dt between 0 and 17 then 1 else 0 end) as cnt_under_18
@@ -1066,7 +1050,8 @@ begin
 		set fl_ooh_prior_this_referral=0
 			, fl_ooh_after_this_referral=0
 
-		if object_ID('tempDB..#afterEps') is not null drop table #afterEps
+		--if object_ID('tempDB..#afterEps') is not null drop table #afterEps
+		DROP TABLE IF EXISTS #afterEps;
 		select   distinct
 				  r.id_case
 				, tce.child id_prsn_child
@@ -1122,7 +1107,7 @@ begin
 						and (select cutoff_date from portal_redux.ref_last_dw_transfer)
 --			order by r.id_case,rfrd_date
 
-delete ref from #referrals ref,ref_last_dw_transfer where id_intake_fact is null and rfrd_date > cutoff_date;
+delete ref from #referrals ref,portal_redux.ref_last_dw_transfer where id_intake_fact is null and rfrd_date > cutoff_date;
 
 
 		truncate table portal_redux.tbl_intakes
@@ -1305,7 +1290,8 @@ delete ref from #referrals ref,ref_last_dw_transfer where id_intake_fact is null
 		alter table portal_redux.tbl_household_children CHECK CONSTRAINT ALL;
 
 		
-	if OBJECT_ID('tempDB..#cte_curr') is not null drop table #cte_curr
+	--if OBJECT_ID('tempDB..#cte_curr') is not null drop table #cte_curr
+	DROP TABLE IF EXISTS #cte_curr;
 	select id_case,rfrd_date,inv_ass_stop ,id_intake_fact, row_number() over (partition by id_case order by id_case,rfrd_date,isnull(inv_ass_stop,'12/31/3999') ,id_intake_fact) as row_num
 	into #cte_curr
 	from portal_redux.tbl_intakes

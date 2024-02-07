@@ -15,8 +15,10 @@ CREATE NONCLUSTERED INDEX idx_intake_grouper
 
 -- populate tbl_intake_grouper table
 
+BEGIN
 set nocount on
-if object_ID('tempDB..#intakes') is not null drop table #intakes
+--if object_ID('tempDB..#intakes') is not null drop table #intakes
+DROP TABLE IF EXISTS #intakes;
 select row_number() over (partition by id_case order by id_case,rfrd_date,intake_rank,id_intake_fact) as case_sort
 ,row_number() over ( order by id_case,rfrd_date,intake_rank,id_intake_fact) as intake_grouper
 ,0 as fl_group_with_prior,*
@@ -83,3 +85,4 @@ update statistics portal_redux.tbl_intake_grouper
 update portal_redux.procedure_flow
 set last_run_date=getdate()
 where procedure_nm='prod_build_tbl_intake_grouper';
+END;

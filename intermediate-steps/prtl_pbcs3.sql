@@ -9,7 +9,7 @@ CREATE TABLE portal_redux.prtl_pbcs3 (
 	census_hispanic_latino_origin_cd int NULL,
 	county_cd int NULL,
 	cd_sib_age_grp int NULL,
-	int_match_param_key bigint NULL,
+	int_match_param_key bigint NOT NULL,
 	cd_reporter int NOT NULL,
 	bin_ihs_svc_cd int NOT NULL,
 	filter_access_type int NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE portal_redux.prtl_pbcs3 (
 	filter_finding int NOT NULL,
 	min_placed_within_month int NOT NULL,
 	cnt_case int NULL,
-	CONSTRAINT PK_prtl_pbcs3 PRIMARY KEY (cohort_begin_date,date_type,qry_type,cd_reporter,bin_ihs_svc_cd,filter_access_type,filter_allegation,filter_finding,min_placed_within_month) WITH (IGNORE_DUP_KEY = ON) ON [PRIMARY],
+	CONSTRAINT PK_prtl_pbcs3 PRIMARY KEY (cohort_begin_date,date_type,qry_type,int_match_param_key,cd_reporter,bin_ihs_svc_cd,filter_access_type,filter_allegation,filter_finding,min_placed_within_month),
 	CONSTRAINT prtl_pbcs3_bin_ihs_svc_cd_FK FOREIGN KEY (bin_ihs_svc_cd) REFERENCES portal_redux.ref_filter_ihs_services(bin_ihs_svc_cd),
 	CONSTRAINT prtl_pbcs3_cd_race_FK FOREIGN KEY (cd_race_census) REFERENCES portal_redux.ref_lookup_ethnicity_census(cd_race_census),
 	CONSTRAINT prtl_pbcs3_cd_reporter_type_FK FOREIGN KEY (cd_reporter) REFERENCES portal_redux.ref_filter_reporter_type(cd_reporter_type),
@@ -61,7 +61,7 @@ set nocount on
 	set @date_type=2;
 	set @chstart='1/1/2004';
 	set @cutoff_date=(select max(cutoff_date) from portal_redux.ref_Last_DW_Transfer);
-	set @chend = (select dateadd(dd,-1,[Year]) from portal_redux.CALENDAR_DIM where TRY_CONVERT(DATE, CALENDAR_DATE)=TRY_CONVERT(DATE, @cutoff_date));
+	set @chend = (select dateadd(dd,-1,[Year]) from portal_redux.CALENDAR_DIM where CALENDAR_DATE=@cutoff_date)
 	
 
 	if object_ID('tempDB..#PBCS3_ALL') is not null drop table #PBCS3_ALL

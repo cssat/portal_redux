@@ -39,7 +39,7 @@ CREATE TABLE portal_redux.cache_pbcs2_params (
 	filter_allegation varchar(30) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	filter_finding varchar(30) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	min_start_date datetime NOT NULL,
-	max_start_date datetime NULL,
+	max_start_date datetime NOT NULL,
 	cnt_qry int NOT NULL,
 	last_run_date datetime NOT NULL
 );
@@ -82,7 +82,6 @@ begin
 		
 		--set @date= (select  concat(char(39),convert(varchar(10),min_date_any,121) ,',',convert(varchar(10),max_date_yr,121) ,char(39))
 		--						from ref_lookup_max_date where procedure_name='sp_ia_safety')
-		
 
 		truncate table portal_redux.cache_pbcs2_params;
 		truncate table portal_redux.cache_pbcs2_aggr;
@@ -117,7 +116,7 @@ begin
 
 
  
-				 exec [portal_redux].[sp_cache_pbcs2_insert_only] 		
+				 exec portal_redux.[sp_cache_pbcs2_insert_only] 		
 					@age_grouping_cd
 					,@race_cd
 					,@cd_county
@@ -150,4 +149,7 @@ begin
 
 	  update statistics portal_redux.cache_pbcs2_params;
 	  update statistics portal_redux.cache_pbcs2_aggr;
+
+	  DROP TABLE #params;
+
 end;

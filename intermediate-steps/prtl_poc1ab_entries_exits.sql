@@ -17,13 +17,13 @@ CREATE TABLE portal_redux.prtl_poc1ab_entries (
 	init_cd_plcm_setng int NULL,
 	long_cd_plcm_setng int NULL,
 	county_cd int NULL,
-	int_match_param_key bigint NULL,
+	int_match_param_key bigint NOT NULL,
 	cnt_entries int NULL,
 	filter_allegation int NOT NULL,
 	filter_finding int NOT NULL,
 	filter_access_type int NOT NULL,
 	start_year int NULL,
-	CONSTRAINT PK_prtl_poc1ab_entries PRIMARY KEY (qry_type,date_type,start_date,bin_dep_cd,max_bin_los_cd,bin_placement_cd,bin_ihs_svc_cd,cd_reporter_type,filter_allegation,filter_finding,filter_access_type) WITH (IGNORE_DUP_KEY = ON) ON [PRIMARY],
+	CONSTRAINT PK_prtl_poc1ab_entries PRIMARY KEY (qry_type,date_type,start_date,bin_dep_cd,max_bin_los_cd,bin_placement_cd,bin_ihs_svc_cd,cd_reporter_type,int_match_param_key,filter_allegation,filter_finding,filter_access_type),
 	CONSTRAINT prtl_ooh_entries_age_grouping_cd_FK FOREIGN KEY (age_grouping_cd) REFERENCES portal_redux.ref_age_groupings_census(age_grouping_cd),
 	CONSTRAINT prtl_ooh_entries_bin_dep_cd_FK FOREIGN KEY (bin_dep_cd) REFERENCES portal_redux.ref_filter_dependency(bin_dep_cd),
 	CONSTRAINT prtl_ooh_entries_bin_ihs_svc_cd_FK FOREIGN KEY (bin_ihs_svc_cd) REFERENCES portal_redux.ref_filter_ihs_services(bin_ihs_svc_cd),
@@ -58,7 +58,7 @@ CREATE TABLE portal_redux.prtl_poc1ab_exits (
 	init_cd_plcm_setng int NULL,
 	long_cd_plcm_setng int NULL,
 	county_cd int NULL,
-	int_match_param_key bigint NULL,
+	int_match_param_key bigint NOT NULL,
 	cd_discharge_type int NOT NULL,
 	cnt_exits int NOT NULL,
 	filter_allegation int NOT NULL,
@@ -79,7 +79,6 @@ CREATE TABLE portal_redux.prtl_poc1ab_exits (
 );
 
 
-
 -- populate prtl_poc1ab_entries & prtl_poc1ab_exits tables
 
 begin
@@ -89,19 +88,19 @@ begin
 
 		declare @cutoff_date datetime
 
+
+
 		declare @last_month_end datetime
 		declare @last_year_end datetime
 
 		-- initialize variables
 		set @startDate='2000-01-01'
 		select @cutoff_date=cutoff_date from portal_redux.ref_Last_DW_Transfer
-		set @endDate=(select dateadd(dd,-1,[month]) from portal_redux.CALENDAR_DIM where TRY_CONVERT(DATE, calendar_date) = TRY_CONVERT(DATE, @cutoff_date))	
-		set @last_month_end=(select dateadd(mm,-1,[month]) from portal_redux.CALENDAR_DIM where TRY_CONVERT(DATE, calendar_date) = TRY_CONVERT(DATE, @cutoff_date))	
-		set @last_year_end=(select dateadd(yy,-1,[year]) from portal_redux.CALENDAR_DIM where TRY_CONVERT(DATE, calendar_date) = TRY_CONVERT(DATE, @cutoff_date))	
-		
-		
-	--if object_id('tempDB..#date') is not null drop table #date
-    DROP TABLE IF EXISTS #date;
+		set @endDate=(select dateadd(dd,-1,[month]) from portal_redux.CALENDAR_DIM where calendar_date=@cutoff_date)	
+		set @last_month_end=(select dateadd(mm,-1,[month]) from portal_redux.CALENDAR_DIM where calendar_date=@cutoff_date)	
+		set @last_year_end=(select dateadd(yy,-1,[year]) from portal_redux.CALENDAR_DIM where calendar_date=@cutoff_date)	
+
+	if object_id('tempDB..#date') is not null drop table #date
 		
 		select distinct [quarter] begin_date,dateadd(dd,-1,dateadd(mm,3,[quarter])) end_date,1 [date_type]  
 		into #date
@@ -115,8 +114,7 @@ begin
 								  
 /***********************************************************                        ENTRIES    ENTRIES  **************************/					
 		-- create entries table
-						--if OBJECT_ID('tempDB..#entries') is not null drop table #entries
-						DROP TABLE IF EXISTS #entries
+						if OBJECT_ID('tempDB..#entries') is not null drop table #entries
 							CREATE TABLE #entries(
 								[qry_type] [int] NOT NULL,
 									[date_type] [int] NULL,
@@ -150,7 +148,7 @@ begin
 									[int_match_param_key] [bigint] NULL,
 									--cnt_episodes int,
 									cnt_entries int,
-									);
+									)
 							
 							insert into #entries (qry_type,date_type,	[start_date]
 								  ,[bin_dep_cd]
@@ -180,7 +178,9 @@ begin
 								  ,[county_cd]
 								  ,[int_match_param_key]
 								  ,cnt_entries)
+
 --  ALL ENTRIES 
+
 	--  ALL DCFS ENTRIES 
 							SELECT 2 [qry_type]
 								  ,dt.date_type [date_type]
@@ -381,10 +381,11 @@ UNION ALL
 								  ,  unq.entry_int_match_param_key_census_child_group
 		
 
+								
+
 								 
 		/*************************************************************************************  EXITS ******************* EXITS **/
-					--if OBJECT_ID('tempDB..#exits') is not null drop table #exits
-						DROP TABLE IF EXISTS #exits;
+					if OBJECT_ID('tempDB..#exits') is not null drop table #exits
 							CREATE TABLE #exits(
 								[qry_type] [int] NOT NULL,
 									[date_type] [int] NULL,
@@ -418,9 +419,8 @@ UNION ALL
 									[int_match_param_key] [bigint] NULL,
 									cd_discharge_type int,
 									cnt_exits int
-									);
-						
-								
+									)
+							
 							insert into #exits (qry_type,date_type,	[start_date]
 								  ,[bin_dep_cd]
 								  ,[max_bin_los_cd]
@@ -578,6 +578,8 @@ UNION ALL
 								  ,exit_county_cd
 								  ,exit_int_match_param_key_census_child_group
 								 , eps.cd_discharge_type
+
+
 ----  UNIQUE DCFS exits
 				union all
 							SELECT 0 as qry_type
@@ -658,15 +660,13 @@ UNION ALL
 		
 
 
-
 	alter table portal_redux.[prtl_poc1ab_entries]	NOCHECK CONSTRAINT ALL;
 	alter table portal_redux.[prtl_poc1ab_exits]	NOCHECK CONSTRAINT ALL;
-	if object_ID(N'portal_redux.prtl_poc1ab_entries',N'U') is not null truncate table portal_redux.prtl_poc1ab_entries
+	if object_ID(N'portal_redux.prtl_poc1ab_entries',N'U') is not null truncate table portal_redux.[prtl_poc1ab_entries]	
 	if object_ID(N'portal_redux.prtl_poc1ab_exits',N'U') is not null truncate table portal_redux.prtl_poc1ab_exits	
 
-
-
-
+					
+		
 			
 			insert into portal_redux.[prtl_poc1ab_entries] ([qry_type]
 					,[date_type]
@@ -795,10 +795,9 @@ UNION ALL
 				   ,cd_discharge_type
 				   ,cnt_exits
 				   ,year(start_date)
-			FROM #exits
+			From #exits 
 
-
-	alter TABLE portal_redux.[prtl_poc1ab_entries]	CHECK CONSTRAINT ALL;
+	alter table portal_redux.[prtl_poc1ab_entries]	CHECK CONSTRAINT ALL;
 	alter table portal_redux.[prtl_poc1ab_exits]	CHECK CONSTRAINT ALL;
 
 
@@ -814,5 +813,9 @@ UNION ALL
 	  set last_build_date=getdate()
 	  ,row_count=(select count(*) from portal_redux.prtl_poc1ab_exits)
 	  where tbl_id=38;
+
+DROP TABLE #date
+DROP TABLE #entries
+DROP TABLE #exits
 
 end;

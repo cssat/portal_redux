@@ -1,6 +1,6 @@
 -- create ref_match_srvc_type_category table
 
---DROP TABLE portal_redux.ref_match_srvc_type_category;
+DROP TABLE IF EXISTS portal_redux.ref_match_srvc_type_category;
 CREATE TABLE portal_redux.ref_match_srvc_type_category (
 	filter_srvc_type decimal(21,0) NOT NULL,
 	fl_family_focused_services smallint NOT NULL,
@@ -29,6 +29,37 @@ CREATE TABLE portal_redux.ref_match_srvc_type_category (
 
 
 -- populate ref_match_srvc_type_category table
+
+BEGIN
+
+if object_id(N'portal_redux.ref_match_srvc_type_category',N'U') is not null drop table portal_redux.[ref_match_srvc_type_category]
+CREATE TABLE [portal_redux].[ref_match_srvc_type_category](
+	[filter_srvc_type] [decimal](21, 0) NOT NULL,
+	[fl_family_focused_services] smallint NOT NULL,
+	[fl_child_care] smallint NOT NULL,
+	[fl_therapeutic_services] smallint NOT NULL,
+	[fl_mh_services] smallint NOT NULL,
+	[fl_receiving_care] smallint NOT NULL,
+	[fl_family_home_placements] smallint NOT NULL,
+	[fl_behavioral_rehabiliation_services] smallint NOT NULL,
+	[fl_other_therapeutic_living_situations] smallint NOT NULL,
+	[fl_specialty_adolescent_services] smallint NOT NULL,
+	[fl_respite] smallint NOT NULL,
+	[fl_transportation] smallint NOT NULL,
+	[fl_clothing_incidentals] smallint NOT NULL,
+	[fl_sexually_aggressive_youth] smallint NOT NULL,
+	[fl_adoption_support] smallint NOT NULL,
+	[fl_various] smallint NOT NULL,
+	[fl_medical] smallint NOT NULL,
+	fl_ihs_reun smallint not null,
+	fl_concrete_goods smallint not null,
+	cd_subctgry_poc_fr int not null default 0,
+	int_filter_service_category int ,
+ PRIMARY KEY  
+(
+	int_filter_service_category ASC,cd_subctgry_poc_fr asc
+)) ON [PRIMARY]
+
 
 insert into portal_redux.[ref_match_srvc_type_category] ( [filter_srvc_type]
       ,[fl_family_focused_services]
@@ -212,7 +243,7 @@ SELECT distinct  (select multiplier from portal_redux.ref_service_cd_subctgry_po
 			,q.cd_subctgry_poc_fr
 			,xw.int_filter_service_category
 	into #temp
-	  from portal_redux.ref_match_srvc_type_category ref
+	  from portal_redux.[ref_match_srvc_type_category] ref
 	  join (select 1 as cd_subctgry_poc_fr,1 as fl_family_focused_services) q on q.fl_family_focused_services = ref.fl_family_focused_services
 	   join portal_redux.ref_service_category_flag_xwalk xw on 
 			   ref.filter_srvc_type=xw.filter_service_category
@@ -401,7 +432,7 @@ SELECT distinct  (select multiplier from portal_redux.ref_service_cd_subctgry_po
 			,ref.fl_concrete_goods
 			,q.cd_subctgry_poc_fr
 			,xw.int_filter_service_category
-	  from portal_redux.ref_match_srvc_type_category ref
+	  from portal_redux.[ref_match_srvc_type_category] ref
 	  join				    (select 8 as cd_subctgry_poc_fr,1 as fl_other_therapeutic_living_situations) q on q.fl_other_therapeutic_living_situations=ref.fl_other_therapeutic_living_situations
 	    join portal_redux.ref_service_category_flag_xwalk xw on 
 			   ref.filter_srvc_type=xw.filter_service_category
@@ -693,7 +724,7 @@ SELECT distinct  (select multiplier from portal_redux.ref_service_cd_subctgry_po
 	  ,fl_ihs_reun
 	  ,fl_concrete_goods
 	  ,cd_subctgry_poc_fr,int_filter_service_category)
-	  select  filter_srvc_type
+	  select  [filter_srvc_type]
       ,[fl_family_focused_services]
       ,[fl_child_care]
       ,fl_therapeutic_services
@@ -716,7 +747,7 @@ SELECT distinct  (select multiplier from portal_redux.ref_service_cd_subctgry_po
 	  ,int_filter_service_category
 	   from #temp
 
-	    insert into portal_redux.[ref_match_srvc_type_category] ( filter_srvc_type
+	    insert into portal_redux.[ref_match_srvc_type_category] ( [filter_srvc_type]
       ,[fl_family_focused_services]
       ,[fl_child_care]
       ,[fl_therapeutic_services]
@@ -757,12 +788,16 @@ SELECT distinct  (select multiplier from portal_redux.ref_service_cd_subctgry_po
 	  ,0
 	  ,0
 	  ,0
-	  ,1;
+	  ,1
 
+		
+		
 update portal_redux.prtl_tables_last_update
 set last_build_date=getdate(),row_count=(select count(*) from portal_redux.ref_match_srvc_type_category)
 where tbl_id=49;
 
 update portal_redux.procedure_flow
 set last_run_date=getdate()
-where procedure_nm='prod_build_match_srvc_type_category';
+where procedure_nm='prod_build_match_srvc_type_category'
+
+END;

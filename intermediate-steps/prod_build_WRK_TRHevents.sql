@@ -1,6 +1,6 @@
 -- create WRK_TRHEvents table
 
--- DROP TABLE portal_redux.WRK_TRHEvents;
+DROP TABLE IF EXISTS portal_redux.WRK_TRHEvents;
 CREATE TABLE portal_redux.WRK_TRHEvents (
 	ID_PRSN_CHILD int NOT NULL,
 	ID_REMOVAL_EPISODE_FACT int NULL,
@@ -19,7 +19,9 @@ CREATE TABLE portal_redux.WRK_TRHEvents (
 
 begin
 
-	if object_ID('tempDB..#WRK_TRHEvents') is not null drop table #WRK_TRHEvents;
+
+		--if object_ID('tempDB..#WRK_TRHEvents') is not null drop table #WRK_TRHEvents;
+		DROP TABLE IF EXISTS #WRK_TRHEvents;
 
 		declare @cutoff_date datetime
 		select @cutoff_date=cutoff_date from portal_redux.ref_Last_DW_Transfer;

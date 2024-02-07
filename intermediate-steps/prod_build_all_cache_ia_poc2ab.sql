@@ -1,47 +1,109 @@
--- exec statement
-EXEC portal_redux.sp_ia_trends_counts
-	@age_grouping_cd = '0'
-,	@race_cd = '0'
-,	@cd_county = '0'
-,	@cd_reporter_type = '0'
-,	@filter_access_type = '0'
-,	@filter_allegation = '0'
-,	@filter_finding = '0';
+-- create cache_poc2ab_aggr table
+
+DROP TABLE IF EXISTS portal_redux.cache_poc2ab_aggr;
+CREATE TABLE portal_redux.cache_poc2ab_aggr (
+	qry_type int NOT NULL,
+	date_type int NOT NULL,
+	start_date datetime NOT NULL,
+	int_param_key bigint NOT NULL,
+	cd_reporter_type int NOT NULL,
+	cd_access_type int NOT NULL,
+	cd_allegation int NOT NULL,
+	cd_finding int NOT NULL,
+	cd_sib_age_grp int NOT NULL,
+	cd_race int NOT NULL,
+	cd_county int NOT NULL,
+	cnt_start_date int NOT NULL,
+	cnt_opened int NOT NULL,
+	cnt_closed int NOT NULL,
+	min_start_date datetime NOT NULL,
+	max_start_date datetime NOT NULL,
+	x1 float NOT NULL,
+	x2 float NOT NULL,
+	insert_date datetime NOT NULL,
+	int_all_param_key decimal(21,0) NOT NULL,
+	qry_id int NOT NULL,
+	start_year int NULL,
+	fl_include_perCapita smallint DEFAULT 1 NOT NULL
+);
+
+
+-- create cache_poc2ab_params table
+
+DROP TABLE IF EXISTS portal_redux.cache_poc2ab_params;
+CREATE TABLE portal_redux.cache_poc2ab_params (
+	qry_ID bigint NOT NULL,
+	age_grouping_cd varchar(20) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	cd_race_census varchar(30) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	cd_county varchar(250) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	cd_reporter_type varchar(100) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	filter_access_type varchar(30) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	filter_allegation varchar(30) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	filter_finding varchar(30) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	min_start_date datetime NOT NULL,
+	max_start_date datetime NOT NULL,
+	cnt_qry int NOT NULL,
+	last_run_date datetime NOT NULL
+);
+
+
+-- create cache_qry_param_poc2ab table
+
+DROP TABLE IF EXISTS portal_redux.cache_qry_param_poc2ab;
+CREATE TABLE portal_redux.cache_qry_param_poc2ab (
+	int_param_key bigint NOT NULL,
+	cd_sib_age_grp int NOT NULL,
+	cd_race int NOT NULL,
+	cd_county int NOT NULL,
+	cd_reporter_type int NOT NULL,
+	cd_access_type int NOT NULL,
+	cd_allegation int NOT NULL,
+	cd_finding int NOT NULL,
+	qry_id int NOT NULL,
+	int_all_param_key numeric(12,0) NOT NULL
+);
 
 
 
-CREATE PROCEDURE portal_redux.[sp_ia_trends_counts](
-  @age_grouping_cd varchar(30)
-,  @race_cd varchar(30)
-,  @cd_county varchar(1000)
-,  @cd_reporter_type varchar(100) 
-,  @filter_access_type varchar(30) 
-,  @filter_allegation  varchar(30)
-, @filter_finding varchar(30) 
-, @fl_return_results bit = 1 )
-as
+-- populate cache_poc2ab_aggr, cache_poc2ab_params, & cache_qry_param_poc2ab tables
+
 BEGIN
- set nocount on
 
- 	 declare @qry_id bigint;
-    declare @mindate datetime;
-    declare @maxdate datetime;
-    declare @maxmonthstart datetime;
-    declare @minmonthstart datetime;
-	declare @tblqryid table(qry_id int);
+		set nocount on
+		
+		truncate table portal_redux.cache_poc2ab_aggr;
+		truncate table portal_redux.cache_poc2ab_params;
+		truncate table portal_redux.cache_qry_param_poc2ab;
 
 
-	declare @var_row_cnt_param int;
-	declare @var_row_cnt_cache int;
+		declare @age_grouping_cd  varchar(30) = N'1,2,3,4,0'
+		declare @race_cd  varchar(30) = N'1,2,3,4,5,6,8,0,9,10,11,12'
+		declare @cd_county varchar(1000) = N'1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,0'
+		declare @cd_reporter_type varchar(100)= N'1,2,5,6,7,8,9,10,11,12,13,14,0'
+		declare @filter_access_type varchar(30) = N'1,2,3,4,5,6,0'
+		declare @filter_allegation varchar(30) = N'1,2,3,4,0'
+		declare @filter_finding varchar(30) = N'1,2,3,4,0'
+
+		declare @qry_id bigint;
+		declare @mindate datetime;
+		declare @maxdate datetime;
+		declare @tblqryid table(qry_id int);
 
 
 
-	select  @mindate=min_date_any,@maxdate=max_date_any ,@minmonthstart=min_date_any,@maxmonthstart=max_date_any
-	from  portal_redux.ref_lookup_max_date where id=18
+		declare @var_row_cnt_param int;
+		declare @var_row_cnt_cache int;
 
 
+
+		if OBJECT_ID('tempDB..#dates') is not null drop table #dates
+		select  min_date_any mindate,max_date_any maxdate
+		into #dates
+		from  portal_redux.ref_lookup_max_date where id=18
+
+		select @mindate=mindate,@maxdate=maxdate from #dates;
   
-
+  
    
 			if OBJECT_ID('tempDB..#age') is not null drop table #age;
 			create table #age(age_grouping_cd int,match_code int);
@@ -263,8 +325,8 @@ BEGIN
 					,@filter_access_type
 					,@filter_allegation
 					,@filter_finding
-					,@minmonthstart
-					,@maxmonthstart
+					,@mindate
+					,@maxdate
 					,1
 					,getdate()
 
@@ -296,6 +358,8 @@ BEGIN
 					 ,cd_finding
 					 ,0 as in_cache
 					 ,@qry_id as qry_id
+					 ,rand(cast(newid() as varbinary)) x1
+					 ,rand(cast(newid() as varbinary)) x2
 				into #cachekeys
 				from (select distinct int_param_key from #prmlocdem) prm
 				cross join (select distinct cd_reporter_type from #rpt) rpt
@@ -315,14 +379,17 @@ BEGIN
 			join portal_redux.[cache_qry_param_poc2ab] poc2ab
 			on poc2ab.[int_all_param_key]=cache.int_hash_key
 			
-	
-			select @var_row_cnt_param=count(*),@var_row_cnt_cache=sum(in_cache) from #cachekeys;
-
-	if @var_row_cnt_param <> @var_row_cnt_cache
+			declare @i int =0
+			declare @stop int = (select count(distinct cd.QUARTER) -1 from portal_redux.CALENDAR_DIM  cd where cd.QUARTER>=(select  min_date_any from  portal_redux.ref_lookup_max_date where id=18)  and cd.quarter <=(select  max_date_any from  portal_redux.ref_lookup_max_date where id=18))
+			declare @start_date datetime
+			declare @qry_type int =0
+		while @qry_type<=2
+		begin
+		set @i=0
+			while @i <= @stop
 			begin
-
-		
-							insert into portal_redux.cache_poc2ab_aggr( 
+				set @start_date=dateadd(mm,3*@i,((select  mindate from  #dates)))
+				insert into portal_redux.cache_poc2ab_aggr( 
 								[qry_type]
 								,[date_type]
 								,[start_date]
@@ -345,7 +412,6 @@ BEGIN
 								,int_all_param_key
 								,qry_id
 								,start_year)
-
 						SELECT    prtl_poc2ab.qry_type
 								, prtl_poc2ab.date_type 
 								, prtl_poc2ab.[start_date]
@@ -360,19 +426,19 @@ BEGIN
 								, isnull(sum(prtl_poc2ab.cnt_start_date),0) as cnt_start_date
 								, isnull(sum(prtl_poc2ab.cnt_opened),0) as cnt_opened
 								, isnull(sum(prtl_poc2ab.cnt_closed),0) as cnt_closed
-								, @minmonthstart as minmonthstart
-								, @maxmonthstart as maxmonthstart
-								, rand(convert(varbinary, newid())) [x1]
-								, rand(convert(varbinary, newid())) [x2]
+								, (select  mindate from #dates) as mindate 
+								, (select  maxdate from #dates)  as maxdate
+								, ck.x1  
+								, ck.x2
 								, getdate() as insert_date
 								, cast((mtch.int_param_key  * power(10.0,5)) as decimal(12,0))
 									+ cast((rpt.cd_reporter_type  * power(10.0,3)) as decimal(12,0))
 									+  cast((acc.cd_access_type  * power(10.0,2)) as decimal(12,0))
 									+  cast((alg.cd_allegation  * power(10.0,1)) as decimal(12,0))
-									+ fnd.cd_finding
-								,ck.qry_id  
-								,prtl_poc2ab.start_year
-							FROM portal_redux.prtl_poc2ab  
+									+ fnd.cd_finding int_all_param_key
+								, @qry_id
+								, prtl_poc2ab.[start_year]
+							FROM portal_redux.prtl_poc2ab   
 								join #prmlocdem mtch on mtch.int_match_param_key=prtl_poc2ab.int_match_param_key 
 								join (select distinct cd_race from #eth ) rc on rc.cd_race=mtch.cd_race_census 
 								join #rpt rpt on rpt.match_code=prtl_poc2ab.cd_reporter_type
@@ -384,8 +450,8 @@ BEGIN
 									+  cast((acc.cd_access_type  * power(10.0,2)) as decimal(12,0))
 									+  cast((alg.cd_allegation  * power(10.0,1)) as decimal(12,0))
 									+ fnd.cd_finding and ck.in_cache=0
-							where prtl_poc2ab.start_date between @mindate and @maxdate
-								
+						--	where prtl_poc2ab.start_date between @mindate and @maxdate
+								where qry_type=@qry_type and @start_date=prtl_poc2ab.start_date
 							group by  prtl_poc2ab.qry_type
 									,prtl_poc2ab.date_type 
 									,prtl_poc2ab.[start_date]
@@ -398,8 +464,15 @@ BEGIN
 									, acc.cd_access_type
 									, alg.cd_allegation
 									, fnd.cd_finding
-									, ck.qry_id;
-		
+									,ck.x1
+									,ck.x2
+							set @i+=1;
+						end		
+					set @qry_type+=1
+				end	
+
+
+
 						update portal_redux.cache_poc2ab_aggr
 						set cache_poc2ab_aggr.fl_include_perCapita=0
 						-- select pop_cnt, cache_poc1ab_aggr.*
@@ -452,97 +525,34 @@ BEGIN
 						
 						update statistics portal_redux.cache_qry_param_poc2ab;
 
+
+						update portal_redux.prtl_tables_last_update
+						set last_build_date=getdate()
+						,row_count=(select count(*)  from portal_redux.cache_poc2ab_aggr )
+						where tbl_name='cache_poc2ab_aggr'
+
 						
-					  end -- if @qry_id is null
-					else  If @qry_id is not null
-						begin
-									update portal_redux.cache_poc2ab_params
-									set cnt_qry=cnt_qry + 1,last_run_date=getdate()
-									where @qry_id=qry_id
-			end
+						update portal_redux.prtl_tables_last_update
+						set last_build_date=getdate()
+						,row_count=(select count(*)  from portal_redux.cache_poc2ab_params )
+						where tbl_name='cache_poc2ab_params'			
+						
+						
+						update portal_redux.prtl_tables_last_update
+						set last_build_date=getdate()
+						,row_count=(select count(*)  from portal_redux.cache_qry_param_poc2ab )
+						where tbl_name='cache_qry_param_poc2ab'
 
-if @fl_return_results = 1
-select
-	a.qry_type_poc2
-	,a.date_type
-	,a.Month
-	,a.Age_Grouping_Cd
-	,a.[Age Grouping]
-	,a.Ethnicity_Cd
-	,a.[Race/Ethnicity]
-	,a.County_Cd
-	,a.County
-	,a.cd_reporter_type
-	,a.Reporter_Desc
-	,a.cd_access_type
-	,a.Access_type_desc
-	,a.cd_allegation
-	,a.Allegation
-	,a.cd_finding
-	,a.Finding
-	,a.[Total Cases First Day]
-	,a.[Opened Cases]
-	,IIF(a.[Total Cases First Day] + a.[Opened Cases] >= a.[Closed Cases],
-		a.[Closed Cases],
-		a.[Total Cases First Day] + a.[Opened Cases]
-	) [Case Closures]
-from (
-	select
-		poc2ab.qry_type [qry_type_poc2]
-		,poc2ab.date_type
-		,poc2ab.start_date [Month]
-		,poc2ab.cd_sib_age_grp [Age_Grouping_Cd]
-		,ref_age.tx_sib_age_grp [Age Grouping]
-		,poc2ab.cd_race [Ethnicity_Cd]
-		,ref_eth.tx_race_census [Race/Ethnicity]
-		,poc2ab.cd_county [County_Cd]
-		,ref_cnty.county_desc [County]
-		,poc2ab.cd_reporter_type
-		,ref_rpt.tx_reporter_type [Reporter_Desc]
-		,poc2ab.cd_access_type
-		,ref_acc.tx_access_type [Access_type_desc]
-		,poc2ab.cd_allegation
-		,ref_alg.tx_allegation [Allegation]
-		,poc2ab.cd_finding
-		,ref_fnd.tx_finding [Finding]
-		,portal_redux.fnc_jitter(poc2ab.cnt_start_date,poc2ab.x1,poc2ab.x2) [Total Cases First Day]
-		,portal_redux.fnc_jitter(poc2ab.cnt_opened,poc2ab.x1,poc2ab.x2) [Opened Cases]
-		,portal_redux.fnc_jitter(poc2ab.cnt_closed,poc2ab.x1,poc2ab.x2) [Closed Cases]
-	from portal_redux.cache_poc2ab_aggr poc2ab  
-	join #cachekeys ck on ck.int_hash_key=poc2ab.int_all_param_key
-	join (select distinct cd_reporter_type from #rpt) rpt on rpt.cd_reporter_type=poc2ab.cd_reporter_type
-	join (select distinct cd_access_type from #access_type) acc on acc.cd_access_type=poc2ab.cd_access_type
-	join (select distinct cd_allegation from #algtn) alg on alg.cd_allegation=poc2ab.cd_allegation
-	join (select distinct cd_finding from #find) fnd on fnd.cd_finding=poc2ab.cd_finding
-	join portal_redux.ref_lookup_sib_age_grp ref_age on ref_age.cd_sib_age_grp=poc2ab.cd_sib_age_grp
-	join portal_redux.ref_lookup_ethnicity_census ref_eth on ref_eth.cd_race_census=poc2ab.cd_race
-	join portal_redux.ref_lookup_county ref_cnty on ref_cnty.county_cd=poc2ab.cd_county
-	join portal_redux.ref_filter_reporter_type ref_rpt on ref_rpt.cd_reporter_type=poc2ab.cd_reporter_type
-	join portal_redux.ref_filter_access_type ref_acc on ref_acc.cd_access_type=poc2ab.cd_access_type
-	join portal_redux.ref_filter_allegation ref_alg on ref_alg.cd_allegation=poc2ab.cd_allegation
-	join portal_redux.ref_filter_finding ref_fnd on ref_fnd.cd_finding=poc2ab.cd_finding
-	where poc2ab.start_date between @mindate and @maxdate
-) a
-order by
-	qry_type_poc2
-	,date_type
-	,Month
-	,Age_Grouping_Cd 
-	,[Race/Ethnicity]
-	,County_Cd
-	,cd_reporter_type
-	,cd_access_type
-	,cd_allegation
-	,cd_finding;
-
-	DROP TABLE #age
-	DROP TABLE #eth
-	DROP TABLE #cnty
-	DROP TABLE #rpt
-	DROP TABLE #access_type
-	DROP TABLE #algtn
-	DROP TABLE #find
-	DROP TABLE #prmlocdem
-	DROP TABLE #cachekeys
+		
+		DROP TABLE #dates
+		DROP TABLE #age
+		DROP TABLE #eth
+		DROP TABLE #cnty
+		DROP TABLE #rpt
+		DROP TABLE #access_type
+		DROP TABLE #algtn
+		DROP TABLE #find
+		DROP TABLE #prmlocdem
+		DROP TABLE #cachekeys
 
 END;

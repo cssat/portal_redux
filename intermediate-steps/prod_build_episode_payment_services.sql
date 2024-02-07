@@ -1,6 +1,6 @@
 -- create episode_payment_services table
 
--- DROP TABLE portal_redux.episode_payment_services;
+DROP TABLE IF EXISTS portal_redux.episode_payment_services;
 CREATE TABLE portal_redux.episode_payment_services (
 	id_prsn_child int NOT NULL,
 	id_removal_episode_fact int NOT NULL,

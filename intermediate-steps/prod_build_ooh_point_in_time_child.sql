@@ -58,11 +58,11 @@ CREATE NONCLUSTERED INDEX idx_pbcw4_1 ON portal_redux.ooh_point_in_time_child ( 
 
 -- populate ooh_point_in_time_child table
 
+
 begin
 	
 		declare @startDate datetime
 		declare @endDate datetime
-		DECLARE @debug SMALLINT
 
 		declare @int_filter_service_category  int
 		declare @filter_service_budget  int
@@ -73,30 +73,31 @@ begin
 		declare @int_startDate int;
 		declare @int_endDate int;
 
+		DECLARE @debug SMALLINT
+		SET @debug = 0;
+
 		-- initialize variables
 		set @startDate='2000-01-01'
 		set @cutoff_date=(select cutoff_date from portal_redux.ref_Last_DW_Transfer)
-		set @last_qtr_end=(select [quarter] from portal_redux.CALENDAR_DIM where TRY_CONVERT(DATE, calendar_date)= TRY_CONVERT(DATE, @cutoff_date))
-		set @last_year_end=(select [year] from portal_redux.CALENDAR_DIM where TRY_CONVERT(DATE, calendar_date)= TRY_CONVERT(DATE, @cutoff_date))	
-		set @endDate=(select max(max_last_end) from (select @last_qtr_end [max_last_end] union all select @last_year_end [max_last_end]) x)
-		SET @debug = 0
+		set @last_qtr_end=(select [quarter] from portal_redux.CALENDAR_DIM where calendar_date=@cutoff_date)	
+		set @last_year_end=(select [year] from portal_redux.CALENDAR_DIM where calendar_date=@cutoff_date)	
+		set @endDate=(select max(max_last_end) from (select @last_qtr_end [max_last_end] union all select @last_year_end [max_last_end]) x)	
 				--first pull all episodes into a temp table to clean up dirty data
 		set @int_startDate=(select convert(varchar(8),@startDate,112));
 		set @int_endDate=(select convert(varchar(8),@endDate,112));
-	
-	
-	
-			if object_id('tempDB..#qtr') is not null drop table #qtr;
-			if object_id('tempDB..#year') is not null drop table #year;
 		
+
+			--if object_id('tempDB..#qtr') is not null drop table #qtr;
+			--if object_id('tempDB..#year') is not null drop table #year;
+			DROP TABLE IF EXISTS tempDb.#qtr;
+			DROP TABLE IF EXISTS tempDb.#year;
 
 			select distinct [quarter] into #qtr from portal_redux.Calendar_dim where ID_CALENDAR_DIM between @int_startDate and @int_endDate;
 			select distinct [year] into #year from portal_redux.Calendar_dim where ID_CALENDAR_DIM  between @int_startDate and @int_endDate;
-		
-		
+			
 			--  first get kids and cohort_dates
 			--if object_id('tempDB..#kids') is not null drop table #kids
-			DROP TABLE IF EXISTS #kids;
+			DROP TABLE IF EXISTS tempDb.#kids;
 			select child [id_prsn_child]
 					,[quarter] [point_in_time_date]
 					,eps.id_removal_episode_fact
@@ -175,7 +176,9 @@ begin
 			join #qtr m on  evt.begin_date <= m.[quarter]
 				and evt.end_date >=m.[quarter]
 				and eps.removal_dt< m.[quarter] 
-				and eps.Federal_Discharge_Date >=m.[quarter];
+				and eps.Federal_Discharge_Date >=m.[quarter]
+			 ;
+
 			
 
 			insert into #kids
@@ -258,7 +261,7 @@ begin
 			join #year m on  evt.begin_date <= m.[year]
 				and evt.end_date >=m.[year]
 				and eps.removal_dt < m.[YEAR]
-				and eps.Federal_Discharge_Date >=m.[YEAR];
+				and eps.Federal_Discharge_Date >=m.[YEAR]
 --  first only
 		insert into #kids
 			select 
@@ -424,13 +427,13 @@ begin
 				and eps.removal_dt < m.[year]
 				and eps.Federal_Discharge_Date >=m.[year]
 			where first_removal_dt=eps.removal_dt;
-		
-		
-			--IF OBJECT_ID (N'debug.kids1', N'U') IS NOT NULL
-			--DROP TABLE IF EXISTS debug.kids1;
+	
+	
+			IF OBJECT_ID (N'debug.kids1', N'U') IS NOT NULL
+				DROP TABLE debug.kids1;
 
-			--if @debug = 1 select * into debug.kids1 
-			--from #kids;
+			if @debug = 1 select * into debug.kids1 
+			from #kids;
 			
 			-- remove multiple placements keeping longest	
 			delete from #kids where row_num > 1;
@@ -448,7 +451,6 @@ begin
 					and q.qry_type=k.qry_type
 					and q.point_in_time_date=k.point_in_time_date
 					and q.id_removal_episode_fact=k.id_removal_episode_fact
-			
 	
 	-- get point in time placement count & max_bin_los_cd 
 		update kids
@@ -473,7 +475,7 @@ begin
 		and #kids.cnt_plcm between q.nbr_placement_from and q.nbr_placement_thru
 
 
-		UPDATE #kids
+		update kids
 		set max_bin_los_cd=q.max_bin_los_cd
 		from #kids kids
 		join (
@@ -496,6 +498,8 @@ begin
 		-- delete kids 18 and over
 		delete 		--select id_prsn_child,birth_dt,point_in_time_date
 		 from #kids	 where	age_grouping_cd_census = -99
+
+		
 
 		update kds
 		set long_cd_plcm_setng=qry.prtl_cd_plcm_setng
@@ -524,7 +528,6 @@ begin
 					on qry.row_num=1
 					and qry.id_removal_episode_fact=kds.id_removal_episode_fact
 					and qry.point_in_time_date=kds.point_in_time_date
-			WHERE qry.prtl_cd_plcm_setng IS NOT NULL;
 		--  where kds.id_removal_episode_fact=75307 order by kds.point_in_time_date;
 		
 		
@@ -559,11 +562,12 @@ begin
 							and eps.id_provider_dim_caregiver <=1
 
 
-		--IF OBJECT_ID (N'debug.kids2', N'U') IS NOT NULL
-		--DROP TABLE IF EXISTS debug.kids2;
+		IF OBJECT_ID (N'debug.kids2', N'U') IS NOT NULL
+			DROP TABLE debug.kids2;
 
-		--if @debug = 1 select * into debug.kids2
-		--	from #kids;
+		if @debug = 1 select * into debug.kids2
+			from #kids;
+
 
 		if OBJECT_ID(N'portal_redux.ooh_point_in_time_child',N'U') is not null truncate table  portal_redux.ooh_point_in_time_child
 		INSERT INTO [portal_redux].[ooh_point_in_time_child]
@@ -644,7 +648,8 @@ begin
            ,[tempevt]
            ,[cd_plcm_setng]
            ,[prtl_cd_plcm_setng]
-           ,[fl_out_trial_return_home]	from #kids k
+           ,[fl_out_trial_return_home]	from #kids;
+
 		--	
 
 			update statistics portal_redux.ooh_point_in_time_child;

@@ -13,6 +13,10 @@ CREATE TABLE portal_redux.rate_referrals_scrn_in_order_specific (
 	CONSTRAINT PK_rate_referrals_scrn_in_order_specific PRIMARY KEY (county_cd,nth_order,start_date)
 );
 
+-- populate rate_referrals_scrn_in_order_specific table
+
+BEGIN
+
 -- this table is for all  intakes
 
 		if OBJECT_ID('tempDB..#ref') is not null drop table #ref;
@@ -182,7 +186,7 @@ left join #referrals nth_order  on nth_order.nth_order=n.nth_order
 --where refC.county_cd=0 and year(mnth.[MONTH])=2010
 order by refC.county_cd, mnth.[MONTH],"nth_order"
 		
-alter table portal_redux.rate_referrals_scrn_in_order_specific CHECK CONSTRAINT ALL;
+alter table portal_redux.rate_referrals_scrn_in_order_specific CHECK CONSTRAINT ALL
 -- 
 
 --select * from portal_redux.rate_referrals_scrn_in_order_specific  where county_cd=0 order by start_date,nth_order  
@@ -192,3 +196,9 @@ alter table portal_redux.rate_referrals_scrn_in_order_specific CHECK CONSTRAINT 
 --select * from #ref r
 --where exists(select * from #ref r2 where r2.id_case=r.id_case and r2.referral_order=53)
 --order by rfrd_date
+
+DROP TABLE #ref
+DROP TABLE #priorOrder
+DROP TABLE #referrals
+
+END;

@@ -26,6 +26,10 @@ CREATE TABLE portal_redux.ref_service_category_flag_xwalk (
 );
 
 
+-- populate ref_service_category_flag_xwalk table
+
+BEGIN
+
 truncate table portal_redux.ref_service_category_flag_xwalk
 insert into portal_redux.ref_service_category_flag_xwalk
 select distinct constant.constant  +
@@ -109,7 +113,7 @@ cross join (select number fl_mh_services from portal_redux.numbers where number 
 cross join (select number fl_receiving_care from portal_redux.numbers where number between 0 and 1)  fl_receiving_care
 cross join (select number fl_family_home_placements from portal_redux.numbers where number between 0 and 1)  fl_family_home_placements
 cross join (select number fl_behavioral_rehabiliation_services from portal_redux.numbers where number between 0 and 1)  fl_behavioral_rehabiliation_services
-cross join (select number fl_other_therapeutic_living_situations FROM portal_redux.numbers where number between 0 and 1)  fl_other_therapeutic_living_situations
+cross join (select number fl_other_therapeutic_living_situations from portal_redux.numbers where number between 0 and 1)  fl_other_therapeutic_living_situations
 cross join (select number fl_specialty_adolescent_services from portal_redux.numbers where number between 0 and 1)  fl_specialty_adolescent_services
 cross join (select number fl_respite from portal_redux.numbers where number between 0 and 1)  fl_respite
 cross join (select number fl_transportation from portal_redux.numbers where number between 0 and 1)  fl_transportation
@@ -119,4 +123,6 @@ cross join (select number fl_adoption_support from portal_redux.numbers where nu
 cross join (select number fl_various from portal_redux.numbers where number between 0 and 1)  fl_various
 cross join (select number fl_medical from portal_redux.numbers where number between 0 and 1)  fl_medical
 cross join (select number fl_ihs_reun from portal_redux.numbers where number between 0 and 1)  fl_ihs_reun
-cross join (select number fl_concrete_goods from portal_redux.numbers where number between 0 and 1)  fl_concrete_goods;
+cross join (select number fl_concrete_goods from portal_redux.numbers where number between 0 and 1)  fl_concrete_goods
+
+END;

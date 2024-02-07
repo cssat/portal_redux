@@ -13,7 +13,7 @@ CREATE TABLE portal_redux.prtl_pbcp5 (
 	init_cd_plcm_setng int NULL,
 	long_cd_plcm_setng int NULL,
 	exit_county_cd int NULL,
-	int_match_param_key int NULL,
+	int_match_param_key int NOT NULL,
 	bin_dep_cd int NOT NULL,
 	max_bin_los_cd int NOT NULL,
 	bin_placement_cd int NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE portal_redux.prtl_pbcp5 (
 	mnth int NOT NULL,
 	discharge_count int NULL,
 	cohort_count int NOT NULL,
-	CONSTRAINT PK_prtl_pbcp5 PRIMARY KEY (cohort_exit_year,qry_type,cd_discharge_type,bin_dep_cd,max_bin_los_cd,bin_placement_cd,cd_reporter_type,bin_ihs_svc_cd,filter_access_type,filter_allegation,filter_finding,mnth) WITH (IGNORE_DUP_KEY = ON) ON [PRIMARY],
+	CONSTRAINT PK_prtl_pbcp5 PRIMARY KEY (cohort_exit_year,qry_type,cd_discharge_type,int_match_param_key,bin_dep_cd,max_bin_los_cd,bin_placement_cd,cd_reporter_type,bin_ihs_svc_cd,filter_access_type,filter_allegation,filter_finding,mnth),
 	CONSTRAINT prtl_pbcp5_bin_dep_cd_FK FOREIGN KEY (bin_dep_cd) REFERENCES portal_redux.ref_filter_dependency(bin_dep_cd),
 	CONSTRAINT prtl_pbcp5_bin_ihs_svc_cd_FK FOREIGN KEY (bin_ihs_svc_cd) REFERENCES portal_redux.ref_filter_ihs_services(bin_ihs_svc_cd),
 	CONSTRAINT prtl_pbcp5_bin_placement_cd_FK FOREIGN KEY (bin_placement_cd) REFERENCES portal_redux.ref_filter_nbr_placement(bin_placement_cd),
@@ -53,7 +53,6 @@ CREATE NONCLUSTERED INDEX idx_year_params ON portal_redux.prtl_pbcp5 (  cohort_e
 
 -- populate prtl_pbcp5 table
 
-
 begin
 
 	set nocount on
@@ -62,21 +61,12 @@ begin
 	declare @cutoff_date datetime
 	declare @start_date datetime
 	declare @stop_date datetime
-	
-	
-	
-	SELECT * FROM portal_redux.ref_lookup_max_date;
-	
 
-	SELECT @start_date=min_date_any,@stop_date=max_date_yr from portal_redux.ref_lookup_max_date where id=9
-	SELECT @cutoff_date=cutoff_date from portal_redux.ref_Last_DW_Transfer;
-	SET @stop_date = '2014-01-01 00:00:00.000'; -- original value is NULL, USING substitute
-
-
+	select @start_date=min_date_any,@stop_date=max_date_yr 
+	from portal_redux.ref_lookup_max_date where id=9
+	select @cutoff_date=cutoff_date from portal_redux.ref_Last_DW_Transfer;
 			---------------------------------------------------------------------------------------------------------------------------------------------------------GET SUBSET OF DATA
-
-	--if object_ID('tempDB..#eps') is not null drop table #eps
-    DROP TABLE IF EXISTS #eps;
+	if object_ID('tempDB..#eps') is not null drop table #eps
 
 	select distinct  cohort_exit_year 
 				, 2 as date_type, 0 as qry_type, tce.id_prsn_child, id_removal_episode_fact
@@ -115,7 +105,6 @@ begin
 						from #eps tce
 						-- order by  tce.ID_PRSN_CHILD,tce.Cohort_Entry_Date
 						) q on q.id_removal_episode_fact=eps.id_removal_episode_fact and q.state_custody_start_date=eps.state_custody_start_date			
-						
 			
 			
 							
@@ -124,13 +113,13 @@ begin
 
 	-- for adoption discharge, and adoptions support get demographic information from people_dim
 	if OBJECT_ID('tempDB..#person') is not null drop table #person
-	select distinct pd.id_prsn,dt_birth,cd_gndr,cd_race
+	select distinct pd.id_prsn,dt_birth,cd_gndr,cd_race_census
 	into #person
 	from portal_redux.people_dim pd
 	where exists (select * from #eps eps where eps.id_prsn_child=pd.ID_PRSN and pd.IS_CURRENT=1
 	and eps.cd_discharge_type=3)
 	union 
-	select distinct pd.id_prsn,dt_birth,cd_gndr,cd_race
+	select distinct pd.id_prsn,dt_birth,cd_gndr,cd_race_census
 	from portal_redux.people_dim pd
 	where exists (select * from portal_redux.payment_fact pf
 								join portal_redux.SERVICE_TYPE_DIM std on std.ID_SERVICE_TYPE_DIM=pf.ID_SERVICE_TYPE_DIM
@@ -138,7 +127,7 @@ begin
 								and std.cd_srvc in (22,25)	)
 
 if OBJECT_ID('tempDB..#adptn_support') is not null drop table #adptn_support
-select distinct pf.id_case,pf.id_prsn_child,prsn_pay.DT_BIRTH,prsn_pay.cd_race,prsn_pay.cd_gndr
+select distinct pf.id_case,pf.id_prsn_child,prsn_pay.DT_BIRTH,prsn_pay.cd_race_census,prsn_pay.cd_gndr
 ,(portal_redux.IntDate_to_CalDate(pf.ID_CALENDAR_DIM_SERVICE_BEGIN)) 	[svc_begin_dt],eps.id_prsn_child as eps_child,eps.federal_discharge_date,eps.id_removal_episode_fact
 ,cast(null as int) [row_num]
 ,cast(null as datetime) as nxt_reentry_date
@@ -153,7 +142,7 @@ join #person prsn_pay on prsn_pay.id_prsn=pf.id_prsn_child
 join #person prsn_eps on prsn_eps.ID_PRSN=eps.id_prsn_child
 where prsn_pay.DT_BIRTH=prsn_eps.DT_BIRTH
 and prsn_pay.CD_GNDR=prsn_eps.CD_GNDR
-and prsn_pay.cd_race=prsn_eps.cd_race
+and prsn_pay.cd_race_census=prsn_eps.cd_race_census
 and std.cd_srvc in (22,25)
 order by id_removal_episode_fact
 	
@@ -387,7 +376,7 @@ where adp.nxt_reentry_within_min_month_mult3 is not null
 			update portal_redux.prtl_tables_last_update		
 			set last_build_date=getdate()
 				,row_count=(select count(*) from portal_redux.prtl_pbcp5)
-			where tbl_id=5;
+			where tbl_id=5
 
 end;
 /**  QA 

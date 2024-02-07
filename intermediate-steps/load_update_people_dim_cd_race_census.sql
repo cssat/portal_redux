@@ -1,6 +1,9 @@
-create procedure portal_redux.[load_update_people_dim_cd_race_census] as 	
+ALTER TABLE portal_redux.PEOPLE_DIM
+ADD cd_race_census INT,
+	tx_race_census VARCHAR(200),
+	census_hispanic_latino_origin_cd INT;
 
-	
+
 update portal_redux.people_dim
 set cd_race_census=cd_race
 	,tx_race_census=tx_race
@@ -82,7 +85,7 @@ where census_Hispanic_Latino_Origin_cd is null;
 
 update portal_redux.people_dim
 set tx_race_census=lu.tx_race_census
-from ref_lookup_ethnicity_census lu 
+from portal_redux.ref_lookup_ethnicity_census lu 
 where  lu.cd_race_census=people_dim.cd_race_census;
 
 

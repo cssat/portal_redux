@@ -13,7 +13,7 @@ CREATE TABLE portal_redux.prtl_outcomes (
 	init_cd_plcm_setng int NULL,
 	long_cd_plcm_setng int NULL,
 	Removal_County_Cd int NULL,
-	int_match_param_key int NULL,
+	int_match_param_key int NOT NULL,
 	bin_dep_cd int NOT NULL,
 	max_bin_los_cd int NOT NULL,
 	bin_placement_cd int NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE portal_redux.prtl_outcomes (
 	mnth int NOT NULL,
 	discharge_count int NOT NULL,
 	cohort_count int NOT NULL,
-	CONSTRAINT PK_prtl_outcomes PRIMARY KEY (cohort_entry_date,qry_type,cd_discharge_type,bin_dep_cd,max_bin_los_cd,bin_placement_cd,cd_reporter_type,bin_ihs_svc_cd,filter_access_type,filter_allegation,filter_finding,mnth) WITH (IGNORE_DUP_KEY = ON) ON [PRIMARY],
+	CONSTRAINT PK_prtl_outcomes PRIMARY KEY (cohort_entry_date,qry_type,cd_discharge_type,int_match_param_key,bin_dep_cd,max_bin_los_cd,bin_placement_cd,cd_reporter_type,bin_ihs_svc_cd,filter_access_type,filter_allegation,filter_finding,mnth),
 	CONSTRAINT prtl_outcomes_bin_dep_cd_FK FOREIGN KEY (bin_dep_cd) REFERENCES portal_redux.ref_filter_dependency(bin_dep_cd),
 	CONSTRAINT prtl_outcomes_bin_ihs_svc_cd_FK FOREIGN KEY (bin_ihs_svc_cd) REFERENCES portal_redux.ref_filter_ihs_services(bin_ihs_svc_cd),
 	CONSTRAINT prtl_outcomes_bin_placement_cd_FK FOREIGN KEY (bin_placement_cd) REFERENCES portal_redux.ref_filter_nbr_placement(bin_placement_cd),
@@ -38,20 +38,20 @@ CREATE TABLE portal_redux.prtl_outcomes (
 	CONSTRAINT prtl_outcomes_origin_cd_FK FOREIGN KEY (census_Hispanic_Latino_Origin_cd) REFERENCES portal_redux.ref_lookup_hispanic_latino_census(census_hispanic_latino_origin_cd),
 	CONSTRAINT prtl_outcomes_pk_gndr_FK FOREIGN KEY (pk_gndr) REFERENCES portal_redux.ref_lookup_gender(pk_gndr)
 );
---CREATE NONCLUSTERED INDEX idx_prtl_outcomes ON portal_redux.prtl_outcomes (  int_match_param_key ASC  )  
---	WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
---	ON [PRIMARY ] ;
+CREATE NONCLUSTERED INDEX idx_prtl_outcomes ON portal_redux.prtl_outcomes (  int_match_param_key ASC  )  
+	WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
+	ON [PRIMARY ] ;
 
 
 -- populate prtl_outcomes table
+
 begin
 
-	
 		declare @start_date datetime
 		declare @cutoff_date datetime
 		select @cutoff_date=cutoff_date from portal_redux.ref_Last_DW_Transfer	
 		declare @end_date datetime
-		set @end_date=(select dateadd(yy,-1,cd.[year]) from portal_redux.calendar_dim cd where TRY_CONVERT(DATE, calendar_date)= TRY_CONVERT(DATE, @cutoff_date))
+		set @end_date=(select dateadd(yy,-1,cd.[year]) from portal_redux.calendar_dim cd where CALENDAR_DATE=@cutoff_date)
 	
 		declare @date_type int
 		set @date_type=2
@@ -61,7 +61,7 @@ begin
 -------------------------------------------------------------------------------------------------------------------------------------------------------GET SUBSET OF DATA
 	
 	--if OBJECT_ID('tempDB..#eps') is not null drop table #eps;
-	DROP TABLE IF EXISTS #eps;
+	DROP TABLE IF EXISTS tempDB.#eps;
 	SELECT cohort_entry_year as cohort_entry_date
 	, 2 as date_type, 0 as qry_type, id_prsn_child, id_removal_episode_fact
 	-- if child hasn't exited within 4 years for this measure include them as still in care
@@ -193,14 +193,13 @@ where cd_discharge_type <> 0
 		
 		ALTER TABLE portal_redux.prtl_outcomes NOCHECK CONSTRAINT ALL ;
 		truncate table portal_redux.prtl_outcomes;
-	
 		insert into portal_redux.prtl_outcomes(cohort_entry_date,date_type,qry_type,cd_discharge_type,age_grouping_cd,pk_gndr,cd_race_census
 		,census_Hispanic_Latino_Origin_cd,init_cd_plcm_setng,long_cd_plcm_setng,Removal_County_Cd,int_match_param_key
 		,bin_dep_cd,max_bin_los_cd,bin_placement_cd
 		,cd_reporter_type,bin_ihs_svc_cd,filter_access_type,filter_allegation
 		,filter_finding,mnth,discharge_count,cohort_count
 		)
-		select
+		select 
 			cohort_entry_date
 			,date_type
 			,qry_type
@@ -272,7 +271,7 @@ where cd_discharge_type <> 0
 			,fl_founded_neglect
 			,fl_founded_sexual_abuse
 			,fl_founded_phys_abuse
-			, mnth;
+			, mnth
 
 		ALTER TABLE portal_redux.prtl_outcomes CHECK CONSTRAINT ALL ;
 

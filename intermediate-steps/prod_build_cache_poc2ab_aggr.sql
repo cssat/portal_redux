@@ -17,7 +17,7 @@ CREATE TABLE portal_redux.cache_poc2ab_aggr (
 	cnt_opened int NOT NULL,
 	cnt_closed int NOT NULL,
 	min_start_date datetime NOT NULL,
-	max_start_date datetime NULL, -- NOT
+	max_start_date datetime NOT NULL,
 	x1 float NOT NULL,
 	x2 float NOT NULL,
 	insert_date datetime NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE portal_redux.cache_poc2ab_params (
 	filter_allegation varchar(30) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	filter_finding varchar(30) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	min_start_date datetime NOT NULL,
-	max_start_date datetime NULL, -- NOT
+	max_start_date datetime NOT NULL,
 	cnt_qry int NOT NULL,
 	last_run_date datetime NOT NULL
 );
@@ -65,9 +65,9 @@ CREATE TABLE portal_redux.cache_qry_param_poc2ab (
 
 
 -- populate cache_poc2ab_aggr, cache_qry_param_poc2ab, & cache_poc2ab_params
+	
 begin
 	
-			
 		truncate table portal_redux.cache_poc2ab_aggr;
 		truncate table portal_redux.cache_qry_param_poc2ab;
 		truncate table portal_redux.cache_poc2ab_params;
@@ -303,7 +303,7 @@ begin
 			begin
 
 
-			INSERT INTO [portal_redux].[cache_poc2ab_params]
+			INSERT INTO portal_redux.[cache_poc2ab_params]
 					(qry_id
 					, [age_grouping_cd]
 					,[cd_race_census]
@@ -336,7 +336,7 @@ begin
 			end
 		else
 			begin
-				update [portal_redux].[cache_poc2ab_params]
+				update portal_redux.[cache_poc2ab_params]
 				set cnt_qry=cnt_qry + 1
 				where qry_id= @qry_id;
 			end
@@ -376,11 +376,11 @@ begin
 			update cache
 			set in_cache=1,qry_id=poc2ab.qry_id
 			from #cachekeys cache
-			join [portal_redux].[cache_qry_param_poc2ab] poc2ab
+			join portal_redux.[cache_qry_param_poc2ab] poc2ab
 			on poc2ab.[int_all_param_key]=cache.int_hash_key
 			
 			declare @i int =0
-			declare @stop int = (select count(distinct cd.QUARTER) -1 from portal_redux.CALENDAR_DIM  cd where cd.QUARTER>=(select  min_date_any from  portal_redux.ref_lookup_max_date where id=18)  and cd.quarter <=(select  max_date_any from  portal_redux.ref_lookup_max_date where id=18))
+			declare @stop int = (select count(distinct cd.QUARTER) -1 from portal_redux.CALENDAR_DIM  cd where cd.QUARTER>=(select  min_date_any from portal_redux.ref_lookup_max_date where id=18)  and cd.quarter <=(select  max_date_any from  portal_redux.ref_lookup_max_date where id=18))
 			declare @start_date datetime
 			declare @qry_type int =0
 		while @qry_type<=2
@@ -471,7 +471,7 @@ begin
 
 
 
-						update cache_poc2ab_aggr
+						update portal_redux.cache_poc2ab_aggr
 						set cache_poc2ab_aggr.fl_include_perCapita=0
 						-- select pop_cnt, cache_poc1ab_aggr.*
 						from portal_redux.cache_poc2ab_aggr,prm_household_census_population   
@@ -541,7 +541,20 @@ begin
 	  ,row_count=(select count(*) from portal_redux.cache_qry_param_poc2ab)
 	  where tbl_id=15;
 
-	  	update statistics portal_redux.cache_qry_param_poc2ab;
+	update statistics portal_redux.cache_qry_param_poc2ab;
 	  update statistics portal_redux.cache_poc2ab_params;
 	  update statistics portal_redux.cache_poc2ab_aggr;
+
+	DROP TABLE #x1x2
+	DROP TABLE #dates
+	DROP TABLE #age
+	DROP TABLE #eth
+	DROP TABLE #cnty
+	DROP TABLE #rpt
+	DROP TABLE #access_type
+	DROP TABLE #algtn
+	DROP TABLE #find
+	DROP TABLE #prmlocdem
+	DROP TABLE #cachekeys
+
 end;

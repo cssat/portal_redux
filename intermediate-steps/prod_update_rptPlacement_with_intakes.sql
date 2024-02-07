@@ -1,16 +1,19 @@
--- run in onw query
-
+-- run in one query
 begin
 
-    set nocount on
+		DECLARE @debug SMALLINT
+		SET @debug = 0;
 
-		update tce
-		set id_intake_fact=null
-		from portal_redux.rptPlacement tce;
+		  set nocount on
+
+		  update tce
+		  set id_intake_fact=null
+		  from portal_redux.rptPlacement tce;
 
 	 -- intakes from TBL_INTAKES filtering out alternate intervention and reopen cases
 		  -- where referral date within a year prior to state custody start date thru 10 days beyond state custody start date
-			if object_ID('tempDB..#episodes') is not null drop table #episodes
+			--if object_ID('tempDB..#episodes') is not null drop table #episodes
+			DROP TABLE IF EXISTS #episodes;
 			select tce.id_removal_episode_fact,child,si.id_intake_fact,tce.id_case as id_case_tce,inv_ass_start,inv_ass_stop,removal_dt
 					,discharge_dt as discharge_dt,si.id_case as ID_CASE_SI
 				,iif(si.id_case is not null,1,0)  [update_from_intakes_si]
@@ -119,7 +122,8 @@ begin
 			
 						
 		-- look at intake participants .... using logic to identify children associated with the intake
-		if OBJECT_ID('tempDB..#intake_child') is not null drop table #intake_child
+		--if OBJECT_ID('tempDB..#intake_child') is not null drop table #intake_child
+		DROP TABLE IF EXISTS #intake_child;
 		select distinct
 			intk.id_intake_fact
 			,pdCur.ID_PRSN as child
@@ -336,7 +340,8 @@ begin
 			--if @debug = 1 select * into debug.episodes_9 from #episodes
 
 						
-			if object_ID('tempDB..#siblings') is not null drop table #siblings;
+			--if object_ID('tempDB..#siblings') is not null drop table #siblings;
+			DROP TABLE IF EXISTS #siblings;
 			SELECT distinct tcps.id_prsn_child as ID_PRSN_PRIMCHILD
 						, tcps.ID_REMOVAL_EPISODE_FACT
 						, eps.id_case_tce
@@ -414,5 +419,4 @@ begin
 		set last_run_date=getdate()
 		where procedure_nm='prod_update_rptPlacement_with_intakes'
 
-
-end
+ end;

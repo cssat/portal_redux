@@ -1,6 +1,6 @@
 -- create ref_match_allegation table
 
--- DROP TABLE portal_redux.ref_match_allegation;
+DROP TABLE IF EXISTS portal_redux.ref_match_allegation;
 CREATE TABLE portal_redux.ref_match_allegation (
 	cd_allegation int NOT NULL,
 	filter_allegation int NOT NULL,
@@ -13,10 +13,12 @@ CREATE TABLE portal_redux.ref_match_allegation (
 
 
 -- populate ref_match_allegation table
+BEGIN
 
 truncate table portal_redux.ref_match_allegation
 
-if OBJECT_ID('tempDB..#ref_match_allegation' ) is not null drop table #ref_match_allegation
+--if OBJECT_ID('tempDB..#ref_match_allegation' ) is not null drop table #ref_match_allegation
+DROP TABLE IF EXISTS #ref_match_allegation;
 CREATE TABLE #ref_match_allegation(
 	[filter_allegation] [int] NOT NULL,
 		fl_any_legal [int] NULL,
@@ -52,7 +54,8 @@ union  select (select cd_multiplier constant from portal_redux.ref_filter_allega
 
 
 
-if OBJECT_ID('tempDB..#temp') is not null drop table #temp
+-- if OBJECT_ID('tempDB..#temp') is not null drop table #temp
+DROP TABLE IF EXISTS #temp;
 select 1 as cd_allegation ,filter_allegation,fl_any_legal,fl_neglect,fl_sexual_abuse,fl_phys_abuse
 into #temp 
 from #ref_match_allegation 
@@ -82,3 +85,5 @@ where tbl_id=48;
 update portal_redux.procedure_flow
 set last_run_date=getdate()
 where procedure_nm='prod_build_match_allegation';
+
+END;

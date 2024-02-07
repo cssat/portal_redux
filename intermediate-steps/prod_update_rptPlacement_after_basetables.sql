@@ -1,4 +1,5 @@
-
+-- update rptPlacement after basetables
+BEGIN
 set nocount on;
   update rpt
 set  filter_service_budget = null,int_filter_service_category = null
@@ -55,3 +56,4 @@ left join (
  update portal_redux.procedure_flow
 set last_run_date=getdate()
 where procedure_nm='prod_update_rptPlacement_after_basetables';
+END;

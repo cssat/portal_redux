@@ -6,7 +6,7 @@ CREATE TABLE portal_redux.prtl_poc2ab (
 	date_type int NOT NULL,
 	start_date datetime NOT NULL,
 	start_year int NOT NULL,
-	int_match_param_key bigint NULL,
+	int_match_param_key bigint NOT NULL,
 	cd_reporter_type int NOT NULL,
 	filter_access_type int DEFAULT power((10),(5)) NOT NULL,
 	filter_allegation int DEFAULT power((10),(4)) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE portal_redux.prtl_poc2ab (
 	cnt_start_date int NULL,
 	cnt_opened int NULL,
 	cnt_closed int NULL,
-	CONSTRAINT PK__prtl_poc__D530CF965353F541 PRIMARY KEY (qry_type,date_type,start_date,cd_reporter_type,filter_access_type,filter_allegation,filter_finding) WITH (IGNORE_DUP_KEY = ON) ON [PRIMARY],
+	CONSTRAINT PK__prtl_poc__D530CF965353F541 PRIMARY KEY (qry_type,date_type,start_date,int_match_param_key,cd_reporter_type,filter_access_type,filter_allegation,filter_finding),
 	CONSTRAINT prtl_poc2ab_cd_race_FK FOREIGN KEY (cd_race_census) REFERENCES portal_redux.ref_lookup_ethnicity_census(cd_race_census),
 	CONSTRAINT prtl_poc2ab_cd_reporter_type_FK FOREIGN KEY (cd_reporter_type) REFERENCES portal_redux.ref_filter_reporter_type(cd_reporter_type),
 	CONSTRAINT prtl_poc2ab_cd_sib_age_grpr_FK FOREIGN KEY (cd_sib_age_group) REFERENCES portal_redux.ref_lookup_sib_age_grp(cd_sib_age_grp),
@@ -36,7 +36,7 @@ CREATE NONCLUSTERED INDEX idx_start_date ON portal_redux.prtl_poc2ab (  start_da
 
 -- populate prtl_poc2ab table
 
-begin
+BEGIN
 	
 	if object_id('tempDB..#myDates') is not null drop table #myDates;
 	create table #mydates(date_type int,startDate datetime,endDate datetime)
@@ -44,10 +44,10 @@ begin
 
 	insert into  #mydates
 	select 1,'2004-01-01', dateadd(mm,-3,[quarter] ) 
-	from portal_redux.calendar_dim , portal_redux.ref_last_dw_transfer where TRY_CONVERT(DATE, CALENDAR_DATE) = TRY_CONVERT(DATE, cutoff_date)
+	from portal_redux.calendar_dim ,portal_redux.ref_last_dw_transfer where CALENDAR_DATE=cutoff_date
 	union
 	select 2,	'2004-01-01',	dateadd(yy,-1,[year]) 
-	from portal_redux.calendar_dim , portal_redux.ref_last_dw_transfer where TRY_CONVERT(DATE, CALENDAR_DATE) = TRY_CONVERT(DATE, cutoff_date)
+	from portal_redux.calendar_dim ,portal_redux.ref_last_dw_transfer where CALENDAR_DATE=cutoff_date
 
 	if object_id('tempDB..#cohortDates') is not null drop table #cohortDates;
 	select distinct [quarter]  [cohort_date] ,date_type 
@@ -237,7 +237,7 @@ begin
 									[fl_founded_neglect] [int] NOT NULL,
 									[fl_found_any_legal] [int] NOT NULL,
 									cd_sib_age_group int  NOT NULL,
-									[cd_race_census] [int] NULL,
+									[cd_race_census] [int] NOT NULL,
 									[census_hispanic_latino_origin_cd] [int]NOT NULL,
 									intake_county_cd [int] NOT NULL,
 									cnt_first int not null default 0,
@@ -467,7 +467,7 @@ if object_id('tempDB..#entries') is not null drop table #entries;
 									[fl_founded_neglect] [int] NOT NULL,
 									[fl_found_any_legal] [int] NOT NULL,
 									cd_sib_age_group int  NOT NULL,
-									[cd_race_census] [int] NULL,
+									[cd_race_census] [int] NOT NULL,
 									[census_hispanic_latino_origin_cd] [int]NOT NULL,
 									intake_county_cd [int] NOT NULL,
 									cnt_entries int not null default 0,
@@ -666,7 +666,7 @@ if object_id('tempDB..#entries') is not null drop table #entries;
 									[fl_founded_neglect] [int] NOT NULL,
 									[fl_found_any_legal] [int] NOT NULL,
 									cd_sib_age_group int  NOT NULL,
-									[cd_race_census] [int] NULL,
+									[cd_race_census] [int] NOT NULL,
 									[census_hispanic_latino_origin_cd] [int]NOT NULL,
 									intake_county_cd [int] NOT NULL,
 									cnt_exits int not null default 0,
@@ -1118,13 +1118,18 @@ CREATE NONCLUSTERED INDEX idx_insert_qry_poc2
 				alter table portal_redux.prtl_poc2ab CHECK CONSTRAINT ALL;
 
 
-
-
-
 	update statistics portal_redux.prtl_poc2ab;
 	  update portal_redux.prtl_tables_last_update		
 	  set last_build_date=getdate()
 	  ,row_count=(select count(*) from portal_redux.prtl_poc2ab)
 	  where tbl_id=2;	
 
-end;
+
+	DROP TABLE #myDates
+	DROP TABLE #cohortDates
+	DROP TABLE #intakes
+	DROP TABLE #intk
+	DROP TABLE #entries
+	DROP TABLE #exits
+
+END;

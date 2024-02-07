@@ -1,6 +1,6 @@
 -- create ref_last_month_qtr_yr table
 
--- DROP TABLE portal_redux.ref_last_month_qtr_yr;
+DROP TABLE IF EXISTS portal_redux.ref_last_month_qtr_yr;
 CREATE TABLE portal_redux.ref_last_month_qtr_yr (
 	date_type int NOT NULL,
 	end_date datetime NULL,
@@ -16,7 +16,7 @@ select 1,dateadd(dd,-1,dateadd(mm,3,portal_redux.last_complete_qtr()))
 union
 select 2,cast(cast(year(portal_redux.last_complete_yr()) as char(4)) + '-12-31' as datetime)
 
-update base.procedure_flow
+update portal_redux.procedure_flow
 set last_run_date=getdate()
 where procedure_nm='prod_update_ref_last_month_qtr_yr' 		
 

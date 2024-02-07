@@ -123,14 +123,16 @@ begin
 	declare @start_date datetime;
 	declare @max_case_sort int;
 	declare @case_sort int;
-	DECLARE @debug SMALLINT;
+
+	DECLARE @debug SMALLINT
+	SET @debug = 0;
 			
 	select @cutoff_date=cutoff_date from portal_redux.ref_last_dw_transfer;
 	set @start_date=cast('1/1/1997' as datetime)
-	SET @debug = 0;
 		
 		
-	if object_ID('tempDB..#eps') is not null drop table #eps
+	--if object_ID('tempDB..#eps') is not null drop table #eps
+	DROP TABLE IF EXISTS #eps;
 	
 	select *,row_number() over (partition by id_case order by eps_begin,eps_end  asc) as sort_asc
 	into #eps
@@ -139,7 +141,8 @@ begin
 		,isnull(federal_discharge_date,'12/31/3999') as eps_end
 		from portal_redux.tbl_child_episodes ) eps
 
-	if object_ID('tempDB..#ihs_intk') is not null drop table #ihs_intk	
+	--if object_ID('tempDB..#ihs_intk') is not null drop table #ihs_intk
+	DROP TABLE IF EXISTS #ihs_intk;
 		CREATE TABLE #ihs_intk
 		(ID_INTAKE_FACT INT not null
 		, ID_CASE INT not null
@@ -221,7 +224,8 @@ begin
 			
 			
 	-- 2. only want the CPS screened in for services
-	if object_id('tempDB..#cps') is not null drop table #cps;
+	--if object_id('tempDB..#cps') is not null drop table #cps;
+	DROP TABLE IF EXISTS #cps;
 	
 	SELECT HM.* ,DD.CD_INVS_DISP,DD.tx_INVS_DISP  
 	 into #cps
@@ -248,7 +252,8 @@ begin
 -- start retrieving all assignments that are either designated 'out-of-home care' or cps for social workers
 
 		
-	if object_ID('tempDB..#ih_assgn_all') is not null drop table #ih_assgn_all
+	--if object_ID('tempDB..#ih_assgn_all') is not null drop table #ih_assgn_all
+	DROP TABLE IF EXISTS #ih_assgn_all;
 	SELECT  
 			af.ID_CASE as id_case
 		, inf.ID_INTAKE_FACT
@@ -623,7 +628,8 @@ begin
 
 	
 			-- get all the payment details for detail table
-			if object_ID('tempDB..#ihs_pay_srvc_dtl') is not null drop table #ihs_pay_srvc_dtl		
+			--if object_ID('tempDB..#ihs_pay_srvc_dtl') is not null drop table #ihs_pay_srvc_dtl
+			DROP TABLE IF EXISTS #ihs_pay_srvc_dtl;	
 			select distinct
 				cast(null as int) as id_ihs_episode
 			    ,af.id_payment_fact as dtl_id_payment_fact
@@ -783,7 +789,8 @@ begin
 		if @debug = 1 select * into debug.ihs_pay_srvc_dtl_6 from #ihs_pay_srvc_dtl
 
 
-			if object_ID('tempDB..#ihs_pay_srvc_all') is not null drop table #ihs_pay_srvc_all
+			--if object_ID('tempDB..#ihs_pay_srvc_all') is not null drop table #ihs_pay_srvc_all
+			DROP TABLE IF EXISTS #ihs_pay_srvc_all;
 			SELECT distinct 
 				 sc.id_case
 				 ,sc.id_intake_fact
@@ -928,7 +935,8 @@ begin
 
 
 		-- temp table for merge
-		if object_ID('tempDB..#ihs') is not null drop table #ihs
+		--if object_ID('tempDB..#ihs') is not null drop table #ihs
+		DROP TABLE IF EXISTS #ihs;
 		CREATE TABLE #ihs(
 		id_case int NOT NULL,id_intake_fact int NOT NULL,rfrd_date datetime NOT NULL,case_nxt_intake datetime NULL,days_from_rfrd_date int NULL,
 		min_id_payment_fact int NULL,max_id_payment_fact int NULL,cnt_id_table_origin int NULL,srvc_dt_begin datetime NOT NULL,srvc_dt_end datetime NULL,
@@ -1166,7 +1174,8 @@ join (
 /***************************************************  FINAL TABLE **************************************************************/
 
 				
-				if OBJECT_ID('tempDB..#tbl_ihs_episodes') is not null drop table #tbl_ihs_episodes
+				--if OBJECT_ID('tempDB..#tbl_ihs_episodes') is not null drop table #tbl_ihs_episodes
+				DROP TABLE IF EXISTS #tbl_ihs_episodes;
 				select 
 				cast(null as int) as id_ihs_episode
 				,*
@@ -1397,7 +1406,8 @@ join (
 
 
 			-- save the records before you delete them
-			if object_ID('tempDB..#tmp_eps') is not null drop table #tmp_eps
+			--if object_ID('tempDB..#tmp_eps') is not null drop table #tmp_eps
+			DROP TABLE IF EXISTS #tmp_eps;
 			select distinct ihs.* into #tmp_eps from #ihs_pay_srvc_all ihall
 			left join #tbl_ihs_episodes eps on eps.id_case=ihall.id_case
 			and ihall.srvc_dt_begin between eps.ihs_begin_date and eps.ihs_end_date
@@ -1408,7 +1418,8 @@ join (
 			where eps.id_case is null and ihs.id_case is not null
 
 
-			if object_ID('tempDB..#tmp_srvc') is not null drop table #tmp_srvc
+			--if object_ID('tempDB..#tmp_srvc') is not null drop table #tmp_srvc
+			DROP TABLE IF EXISTS #tmp_srvc;
 			select distinct ihall.* into #tmp_srvc from #ihs_pay_srvc_all ihall
 			left join #tbl_ihs_episodes eps on eps.id_case=ihall.id_case
 			and ihall.srvc_dt_begin between eps.ihs_begin_date and eps.ihs_end_date
@@ -1433,7 +1444,8 @@ join (
 			--if @debug = 1 select * into debug.ihs_pay_srvc_all_14 from #ihs_pay_srvc_all
 
 
-			if object_id('tempDB..#tbl_both') is not null drop table #tbl_both;
+			--if object_id('tempDB..#tbl_both') is not null drop table #tbl_both;
+			DROP TABLE IF EXISTS #tbl_both;
 			--insert into #tbl_ihs_episodes
 			SELECT  distinct 
 				null as id_ihs_episode
@@ -2219,7 +2231,7 @@ where  q.id_ihs_episode=tbl_ihs_episodes.id_ihs_episode
 	update eps
 	set int_filter_service_category=xw.int_filter_service_category
 	from portal_redux.tbl_ihs_episodes eps
-	join ref_service_category_flag_xwalk xw 
+	join portal_redux.ref_service_category_flag_xwalk xw 
 		on eps.fl_family_focused_services=xw.fl_family_focused_services
 		and eps.fl_child_care=xw.fl_child_care
 		and eps.fl_therapeutic_services=xw.fl_therapeutic_services
@@ -2277,4 +2289,4 @@ update portal_redux.procedure_flow
 set last_run_date=getdate()
 where procedure_nm='prod_build_tbls_ihs_episode_services'
 	
-end
+end;

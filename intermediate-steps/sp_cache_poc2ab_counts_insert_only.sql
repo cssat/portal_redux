@@ -1,3 +1,12 @@
+-- EXEC portal_redux.sp_cache_poc2ab_counts_insert_only
+-- 	@age_grouping_cd = '0'
+-- 	, @race_cd = '0'
+-- 	, @cd_county = '0'
+-- 	, @cd_reporter_type = '0'
+-- 	, @filter_access_type = '0'
+-- 	, @filter_allegation = '0'
+-- 	, @filter_finding = '0';
+
 
 CREATE PROCEDURE [portal_redux].[sp_cache_poc2ab_counts_insert_only](
   @age_grouping_cd varchar(30)
@@ -8,8 +17,9 @@ CREATE PROCEDURE [portal_redux].[sp_cache_poc2ab_counts_insert_only](
 ,  @filter_allegation  varchar(30)
 , @filter_finding varchar(30) )
 as
- set nocount on
+BEGIN
 
+	 set nocount on
 	
 	 declare @qry_id bigint;
     declare @mindate datetime;
@@ -402,7 +412,7 @@ as
 									, ck.qry_id;
 
 
-						update cache_poc2ab_aggr
+						update portal_redux.cache_poc2ab_aggr
 						set cache_poc2ab_aggr.fl_include_perCapita=0
 						-- select pop_cnt, cache_poc1ab_aggr.*
 						from portal_redux.cache_poc2ab_aggr,prm_household_census_population   
@@ -459,4 +469,17 @@ as
 									update portal_redux.cache_poc2ab_params
 									set cnt_qry=cnt_qry + 1,last_run_date=getdate()
 									where @qry_id=qry_id
-end;
+
+		DROP TABLE #age
+		DROP TABLE #eth
+		DROP TABLE #cnty
+		DROP TABLE #rpt
+		DROP TABLE #access_type
+		DROP TABLE #algtn
+		DROP TABLE #find
+		DROP TABLE #prmlocdem
+		DROP TABLE #cachekeys
+
+
+	end
+END;
