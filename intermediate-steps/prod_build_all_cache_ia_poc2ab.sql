@@ -76,6 +76,7 @@ BEGIN
 		truncate table portal_redux.cache_qry_param_poc2ab;
 
 
+
 		declare @age_grouping_cd  varchar(30) = N'1,2,3,4,0'
 		declare @race_cd  varchar(30) = N'1,2,3,4,5,6,8,0,9,10,11,12'
 		declare @cd_county varchar(1000) = N'1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,0'
@@ -99,7 +100,7 @@ BEGIN
 		if OBJECT_ID('tempDB..#dates') is not null drop table #dates
 		select  min_date_any mindate,max_date_any maxdate
 		into #dates
-		from  portal_redux.ref_lookup_max_date where id=18
+		from portal_redux.ref_lookup_max_date where id=18
 
 		select @mindate=mindate,@maxdate=maxdate from #dates;
   
@@ -301,7 +302,7 @@ BEGIN
 			begin
 
 
-			INSERT INTO portal_redux.[cache_poc2ab_params]
+			INSERT INTO [portal_redux].[cache_poc2ab_params]
 					(qry_id
 					, [age_grouping_cd]
 					,[cd_race_census]
@@ -317,7 +318,7 @@ BEGIN
 					OUTPUT inserted.qry_ID into @tblqryid
 				select 
 					isnull((select max(qry_id) +1
-						from portal_redux.[cache_poc2ab_params]),1)
+						from portal_redux.cache_poc2ab_params),1)
 					,@age_grouping_cd
 					,@race_cd
 					,@cd_county
@@ -334,7 +335,7 @@ BEGIN
 			end
 		else
 			begin
-				update portal_redux.[cache_poc2ab_params]
+				update [portal_redux].[cache_poc2ab_params]
 				set cnt_qry=cnt_qry + 1
 				where qry_id= @qry_id;
 			end
@@ -376,11 +377,11 @@ BEGIN
 			update cache
 			set in_cache=1,qry_id=poc2ab.qry_id
 			from #cachekeys cache
-			join portal_redux.[cache_qry_param_poc2ab] poc2ab
+			join [portal_redux].[cache_qry_param_poc2ab] poc2ab
 			on poc2ab.[int_all_param_key]=cache.int_hash_key
 			
 			declare @i int =0
-			declare @stop int = (select count(distinct cd.QUARTER) -1 from portal_redux.CALENDAR_DIM  cd where cd.QUARTER>=(select  min_date_any from  portal_redux.ref_lookup_max_date where id=18)  and cd.quarter <=(select  max_date_any from  portal_redux.ref_lookup_max_date where id=18))
+			declare @stop int = (select count(distinct cd.QUARTER) -1 from portal_redux.CALENDAR_DIM cd where cd.QUARTER>=(select  min_date_any from portal_redux.ref_lookup_max_date where id=18) and cd.quarter <=(select  max_date_any from portal_redux.ref_lookup_max_date where id=18))
 			declare @start_date datetime
 			declare @qry_type int =0
 		while @qry_type<=2
@@ -541,7 +542,7 @@ BEGIN
 						update portal_redux.prtl_tables_last_update
 						set last_build_date=getdate()
 						,row_count=(select count(*)  from portal_redux.cache_qry_param_poc2ab )
-						where tbl_name='cache_qry_param_poc2ab'
+						where tbl_name='cache_qry_param_poc2ab'			
 
 		
 		DROP TABLE #dates
