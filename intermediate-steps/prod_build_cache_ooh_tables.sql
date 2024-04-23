@@ -747,8 +747,8 @@ begin
 						set @mysql=@mysql +   char(39) + @filter_access_type +   char(39) + char(13) + char(10) + ',';
 						set @mysql=@mysql +   char(39) + @filter_allegation +   char(39) + char(13) + char(10) + ',';
 						set @mysql=@mysql +   char(39) + @filter_finding +   char(39) + char(13) + char(10) + ',';
-						set @mysql=@mysql +   char(39) + @filter_service_category +   char(39) + char(13) + char(10) + ',';
-						set @mysql=@mysql +   char(39) + @filter_service_budget +   char(39) + char(13) + char(10) + ',';
+						--set @mysql=@mysql +   char(39) + @filter_service_category +   char(39) + char(13) + char(10) + ',';
+						--set @mysql=@mysql +   char(39) + @filter_service_budget +   char(39) + char(13) + char(10) + ',';
 						set @mysql=@mysql +   char(39) + @bin_dep_cd +   char(39) + char(13) + char(10) + ',0';
 
 						exec (@mysql);

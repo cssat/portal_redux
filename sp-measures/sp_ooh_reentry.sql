@@ -1,26 +1,7 @@
 -- exec statement
-EXEC portal_redux.sp_ooh_reentry
-	@date = 0,
-	@age_grouping_cd = 0,
-	@race_cd = 0,
-	@gender_cd = 0,
-	@init_cd_plcm_setng = 0,
-	@long_cd_plcm_setng = 0,
-	@county_cd = 0,
-	@bin_los_cd = 0,
-	@bin_placement_cd = 0,
-	@bin_ihs_svc_cd = 0,
-	@cd_reporter_type = 0,
-	@filter_access_type = 0,
-	@filter_allegation = 0,
-	@filter_finding = 0,
-	@bin_dep_cd = 0,
-	@fl_return_results = 1;
+EXEC portal_redux.sp_ooh_reentry 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
 
--- create sp_ooh_reentry procedure
-
-DROP PROCEDURE IF EXISTS portal_redux.sp_ooh_reentry;
 CREATE PROCEDURE [portal_redux].[sp_ooh_reentry](
    @date varchar(3000)
 ,  @age_grouping_cd varchar(30)
@@ -37,11 +18,12 @@ CREATE PROCEDURE [portal_redux].[sp_ooh_reentry](
 ,  @filter_allegation  varchar(30)
 , @filter_finding varchar(30)
 , @bin_dep_cd varchar(20)
-,@fl_return_results smallint  -- 1 = yes; 0 = no (for loading cache tables set to 0)
+,@fl_return_results smallint = 1 -- 1 = yes; 0 = no (for loading cache tables set to 0)
 )
 as
+BEGIN
  set nocount on
- /**  for qa only
+ /* --  for qa only
  declare  @date varchar(3000)='2000-01-01,2013-01-01'
 declare  @age_grouping_cd varchar(30)='0'
 declare  @race_cd varchar(30)='0'
@@ -56,8 +38,7 @@ declare  @cd_reporter_type varchar(100)= '0'
 declare  @filter_access_type varchar(30)= '0'
 declare  @filter_allegation  varchar(30)= '0'
 declare @filter_finding varchar(30)= '0'
-declare @bin_dep_cd varchar(20)= '0'
- 	**/
+declare @bin_dep_cd varchar(20)= '0' */
 	
 
     declare @qry_id bigint;
@@ -76,7 +57,7 @@ declare @bin_dep_cd varchar(20)= '0'
     -----------------------------------  set dates  -------------------------------------  		
 
     select @minmonthstart=min_date_any ,@maxmonthstart=max_date_yr ,@mindate=min_date_any,@maxdate=max_date_yr
-	FROM ref_lookup_max_date where id=9;
+	FROM portal_redux.ref_lookup_max_date where id=9;
 	
    
 			if OBJECT_ID('tempDB..#age') is not null drop table #age;
@@ -157,7 +138,7 @@ declare @bin_dep_cd varchar(20)= '0'
 
 		insert into #age(age_grouping_cd,match_code)
 		select age_grouping_cd,match_code
-		 from prm_age_cdc_census_mix 
+		 from portal_redux.prm_age_cdc_census_mix 
 		 join [portal_redux].[fn_ReturnStrTableFromList](@age_grouping_cd,0) 
 			on cast(arrValue as int)=age_grouping_cd;
 
@@ -168,7 +149,7 @@ declare @bin_dep_cd varchar(20)= '0'
 		insert into #eth(cd_race,cd_origin,match_code)
 
 		select eth.cd_race,eth.cd_origin,eth.match_code
-		from prm_eth_census eth
+		from portal_redux.prm_eth_census eth
 		join [portal_redux].[fn_ReturnStrTableFromList](@race_cd,0) 
 		on cast(arrValue as int)=eth.cd_race
 
@@ -178,7 +159,7 @@ declare @bin_dep_cd varchar(20)= '0'
 		
 		insert into #gdr(PK_GNDR,match_code)
 		select pk_gndr,match_code
-		from prm_gndr gdr
+		from portal_redux.prm_gndr gdr
 		join portal_redux.fn_ReturnStrTableFromList(@gender_cd,0)
 		on cast(arrValue as int)=gdr.pk_gndr
 
@@ -188,7 +169,7 @@ declare @bin_dep_cd varchar(20)= '0'
 
 		insert into #fpl(cd_plcm_setng,match_code)
 		select fpl.init_cd_plcm_setng,fpl.match_code
-		from prm_fpl  fpl
+		from portal_redux.prm_fpl  fpl
 		join portal_redux.fn_ReturnStrTableFromList(@init_cd_plcm_setng,0) sel on cast(sel.arrValue as int)=fpl.init_cd_plcm_setng
 
 		update statistics #fpl
@@ -196,7 +177,7 @@ declare @bin_dep_cd varchar(20)= '0'
 		----------------------------------  LONGEST PLACEMENT ------------------------------------------------------------
 			insert into #lpl(cd_plcm_setng,match_code) 
 		select lpl.long_cd_plcm_setng,lpl.match_code  
-		from prm_lpl  lpl
+		from portal_redux.prm_lpl  lpl
 		join portal_redux.fn_ReturnStrTableFromList(@long_cd_plcm_setng,0) sel on cast(sel.arrValue as int)=lpl.long_cd_plcm_setng
 
 
@@ -206,7 +187,7 @@ declare @bin_dep_cd varchar(20)= '0'
     
 			insert into #cnty(cd_cnty,match_code)
 			select  cnty.cd_cnty,cnty.match_code
-			from prm_cnty cnty
+			from portal_redux.prm_cnty cnty
 			join portal_redux.fn_ReturnStrTableFromList(@County_Cd,0) sel on cast(sel.arrValue as int)=cnty.cd_cnty
 
 			
@@ -215,7 +196,7 @@ declare @bin_dep_cd varchar(20)= '0'
 		--------------------------------------------  LOS CODE --------------------------------------------------
 			insert into #los(bin_los_cd ,match_code)
 			select los.bin_los_cd,los.match_code from [portal_redux].[fn_ReturnStrTableFromList] (@bin_los_cd,0)
-			join [prm_los_max_bin_los_cd] los on los.bin_los_cd=cast(arrValue as int);
+			join portal_redux.[prm_los_max_bin_los_cd] los on los.bin_los_cd=cast(arrValue as int);
 
 			
 
@@ -224,7 +205,7 @@ declare @bin_dep_cd varchar(20)= '0'
 	
 		insert into #nbrplc(bin_placement_cd,match_code)
 		select plc.bin_placement_cd,plc.match_code
-		from prm_plc plc
+		from portal_redux.prm_plc plc
 		join portal_redux.fn_ReturnStrTableFromList(@bin_placement_cd,0) sel
 		on cast(sel.arrValue as int)=plc.bin_placement_cd
 
@@ -232,7 +213,7 @@ declare @bin_dep_cd varchar(20)= '0'
 		-------------------------------------- IHS SRVC ------------------------------
 		insert into #ihs(bin_ihs_svc_cd,match_code)
 		select ihs.bin_ihs_svc_cd,ihs.match_code
-		from prm_ihs ihs
+		from portal_redux.prm_ihs ihs
 		join portal_redux.fn_ReturnStrTableFromList(@bin_ihs_svc_cd,0) sel
 		on cast(sel.arrValue as int)=ihs.bin_ihs_svc_cd
 
@@ -241,7 +222,7 @@ declare @bin_dep_cd varchar(20)= '0'
 
 		insert into #rpt(cd_reporter_type,match_code)
 		select rpt.cd_reporter_type,rpt.match_code
-		from prm_rpt rpt
+		from portal_redux.prm_rpt rpt
 		join portal_redux.fn_ReturnStrTableFromList(@cd_reporter_type,0) sel
 		on cast(sel.arrValue as int)=rpt.cd_reporter_type
 
@@ -251,7 +232,7 @@ declare @bin_dep_cd varchar(20)= '0'
 		-----------------------------------   access_type --------------------------------------
 			insert into #access_type(cd_access_type,filter_access_type,match_code)
 			select  acc.cd_access_type,acc.match_code,acc.match_code
-			from prm_acc acc			
+			from portal_redux.prm_acc acc			
 			join portal_redux.fn_ReturnStrTableFromList(@filter_access_type,0) sel
 			on cast(sel.arrValue as int)=acc.cd_access_type
 
@@ -260,7 +241,7 @@ declare @bin_dep_cd varchar(20)= '0'
 		----------------------------------   ALLEGATIONS ---------------------------------------
 			insert into #algtn(cd_allegation,filter_allegation,match_code)
 			select alg.cd_allegation,alg.match_code,alg.match_code
-			from prm_alg alg
+			from portal_redux.prm_alg alg
 			join portal_redux.fn_ReturnStrTableFromList(@filter_allegation,0) sel
 			on cast(sel.arrValue as int)=alg.cd_allegation
 
@@ -269,7 +250,7 @@ declare @bin_dep_cd varchar(20)= '0'
 	
 			insert into #find(cd_finding,filter_finding,match_code)
 			select fnd.cd_finding,fnd.match_code,fnd.match_code
-			from prm_fnd fnd
+			from portal_redux.prm_fnd fnd
 			join portal_redux.fn_ReturnStrTableFromList(@filter_finding,0) sel
 			on cast(sel.arrValue as int)= fnd.cd_finding
 				
@@ -278,7 +259,7 @@ declare @bin_dep_cd varchar(20)= '0'
 		-----------------------------------  dependency ---------------------------------------
 			insert into #dep(bin_dep_cd ,match_code)
 			select dep.bin_dep_cd,dep.match_code from [portal_redux].[fn_ReturnStrTableFromList] (@bin_dep_cd,0)
-			join prm_dep dep on dep.bin_dep_cd=cast(arrValue as int);
+			join portal_redux.prm_dep dep on dep.bin_dep_cd=cast(arrValue as int);
 
 			update statistics #dep;
 
@@ -286,25 +267,25 @@ declare @bin_dep_cd varchar(20)= '0'
 select @minfilterdate = max(a.db_min_filter_date)
 from (
 	select max(d.min_filter_date) as 'db_min_filter_date'
-	from ref_filter_dependency d
+	from portal_redux.ref_filter_dependency d
 	inner join #dep td on td.bin_dep_cd = d.bin_dep_cd
 
 	union
 
 	select max(a.min_filter_date) as 'db_min_filter_date'
-	from ref_filter_allegation a
+	from portal_redux.ref_filter_allegation a
 	inner join #algtn at on at.cd_allegation = a.cd_allegation
 
 	union
 
 	select max(f.min_filter_date) as 'db_min_filter_date'
-	from ref_filter_finding f
+	from portal_redux.ref_filter_finding f
 	inner join #find ft on ft.cd_finding = f.cd_finding
 
 	union
 
     select max(e.min_filter_date) as 'db_min_filter_date'
-    from ref_filter_access_type e
+    from portal_redux.ref_filter_access_type e
     inner join #access_type et on et.cd_access_type = e.cd_access_type
     
     union
@@ -534,7 +515,7 @@ from (
 			update cache
 			set in_cache=1,qry_id=pbcp5.qry_id
 			from #cachekeys cache
-			join portal_redux.[cache_qry_param_pbcp5] pbcp5
+			join [portal_redux].[cache_qry_param_pbcp5] pbcp5
 			on pbcp5.int_hash_key=cache.int_hash_key
 
 
@@ -614,8 +595,8 @@ from (
 								,che.qry_id as qry_id
 								,year(prtl_pbcp5.cohort_exit_year) as exit_year
 								,int_hash_key
-								, sum(prtl_pbcp5.discharge_count) as reentry_cnt
-								, tot_cohort.tot_episodes
+								, sum(prtl_pbcp5.discharge_count) as reentry_count
+								, tot_cohort.tot_episodes AS total_count
 							into #mytemp
 							FROM portal_redux.prtl_pbcp5  
 								join #prmlocdem mtch on mtch.int_match_param_key=prtl_pbcp5.int_match_param_key 
@@ -699,8 +680,6 @@ from (
 						
 						
 						
-						
-						
 						insert into portal_redux.cache_pbcp5_aggr( 
 								[qry_type]
 								,[date_type]
@@ -744,7 +723,7 @@ from (
 
 						update statistics portal_redux.cache_pbcp5_aggr
 
-						INSERT INTO portal_redux.[cache_qry_param_pbcp5]
+						INSERT INTO [portal_redux].[cache_qry_param_pbcp5]
 								   ([int_param_key]
 								   ,bin_dep_cd
 								   ,[bin_los_cd]
@@ -801,7 +780,7 @@ from (
                             , pbcp5.date_type
                             , pbcp5.age_grouping_cd
                             , ref_age.age_grouping  "Age Grouping"
-                            , pbcp5.cd_race as ethnicity_cd
+, pbcp5.cd_race as ethnicity_cd
                             , ref_eth.tx_race_census   "Race/Ethnicity" 
                             , pbcp5.pk_gndr as gender_cd
                             , ref_gdr.tx_gndr  "Gender" 
@@ -834,25 +813,25 @@ from (
             from portal_redux.cache_pbcp5_aggr pbcp5 
             join #cachekeys ck on ck.int_hash_key=pbcp5.int_all_param_key
                 and ck.qry_id=pbcp5.qry_id
-			join ref_last_dw_transfer on 1=1
-            join [ref_lookup_cd_discharge_type_exits] toe on toe.cd_discharge_type=pbcp5.cd_discharge_type
- 						join vw_ref_dependency_lag ref_dep on ref_dep.bin_dep_cd=pbcp5.bin_dep_cd 
+			join portal_redux.ref_last_dw_transfer on 1=1
+            join portal_redux.[ref_lookup_cd_discharge_type_exits] toe on toe.cd_discharge_type=pbcp5.cd_discharge_type
+ 						join portal_redux.vw_ref_dependency_lag ref_dep on ref_dep.bin_dep_cd=pbcp5.bin_dep_cd 
 						and ref_dep.date_type=pbcp5.date_type 
 									and pbcp5.cohort_exit_year between @minfilterdate and cohort_max_filter_date
-						join ref_filter_los ref_los on ref_los.bin_los_cd=pbcp5.bin_los_cd
+						join portal_redux.ref_filter_los ref_los on ref_los.bin_los_cd=pbcp5.bin_los_cd
 						and  dateadd(dd,abs(ref_los.lag) ,dateadd(mm,9,dateadd(dd,-1,dateadd(yy,1,pbcp5.cohort_exit_year))))<= cutoff_date			
 			join [portal_redux].[ref_age_cdc_census_mix]  ref_age on ref_age.age_grouping_cd=pbcp5.age_grouping_cd
-			join ref_lookup_gender ref_gdr on ref_gdr.[pk_gndr]=pbcp5.pk_gndr
-			join ref_lookup_ethnicity_census ref_eth on ref_eth.[cd_race_census] = pbcp5.cd_race
+			join portal_redux.ref_lookup_gender ref_gdr on ref_gdr.[pk_gndr]=pbcp5.pk_gndr
+			join portal_redux.ref_lookup_ethnicity_census ref_eth on ref_eth.[cd_race_census] = pbcp5.cd_race
 			join [portal_redux].[ref_lookup_plcmnt]  ref_fpl on ref_fpl.[cd_plcm_setng] = pbcp5.init_cd_plcm_setng
 			join [portal_redux].[ref_lookup_plcmnt]  ref_lpl on ref_lpl.[cd_plcm_setng] = pbcp5.long_cd_plcm_setng
-            join ref_lookup_county ref_cnty on ref_cnty.county_cd=pbcp5.county_cd
+            join portal_redux.ref_lookup_county ref_cnty on ref_cnty.county_cd=pbcp5.county_cd
 			join [portal_redux].[ref_filter_nbr_placement] ref_plc on ref_plc.[bin_placement_cd]=pbcp5.[bin_placement_cd]
-            join ref_filter_reporter_type ref_rpt on ref_rpt.cd_reporter_type=pbcp5.cd_reporter_type
-			join ref_filter_ihs_services ref_ihs on ref_ihs.[bin_ihs_svc_cd]=pbcp5.bin_ihs_svc_cd
-            join ref_filter_access_type ref_acc on ref_acc.cd_access_type=pbcp5.cd_access_type
-			join ref_filter_allegation ref_alg on ref_alg.cd_allegation=pbcp5.cd_allegation
-			join ref_filter_finding ref_fnd on ref_fnd.cd_finding=pbcp5.cd_finding
+            join portal_redux.ref_filter_reporter_type ref_rpt on ref_rpt.cd_reporter_type=pbcp5.cd_reporter_type
+			join portal_redux.ref_filter_ihs_services ref_ihs on ref_ihs.[bin_ihs_svc_cd]=pbcp5.bin_ihs_svc_cd
+            join portal_redux.ref_filter_access_type ref_acc on ref_acc.cd_access_type=pbcp5.cd_access_type
+			join portal_redux.ref_filter_allegation ref_alg on ref_alg.cd_allegation=pbcp5.cd_allegation
+			join portal_redux.ref_filter_finding ref_fnd on ref_fnd.cd_finding=pbcp5.cd_finding
 			where dateadd(mm,( 12 + pbcp5.reentry_within_month) ,pbcp5.cohort_exit_year) <= cutoff_date
             order by 
                 pbcp5.bin_dep_cd asc
@@ -873,4 +852,5 @@ from (
                     , pbcp5.cd_allegation
                     , pbcp5.cd_finding
             ,pbcp5.reentry_within_month asc
-            ,pbcp5.cd_discharge_type asc;
+            ,pbcp5.cd_discharge_type asc
+END;

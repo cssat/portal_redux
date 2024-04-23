@@ -1,7 +1,7 @@
 -- exec statement
 
 
-CREATE PROCEDURE [portal_redux].[sp_ooh_wb_familysettings](
+CREATE PROCEDURE [portal_redux].[sp_ooh_wb_siblings](
    @date varchar(3000)
 ,  @age_grouping_cd varchar(30)
 ,  @race_cd varchar(30)
@@ -20,23 +20,21 @@ CREATE PROCEDURE [portal_redux].[sp_ooh_wb_familysettings](
 ,@fl_return_results smallint  -- 1 = yes; 0 = no (for loading cache tables set to 0)
 )
 as
+BEGIN
  set nocount on
- 
-
-    declare @qry_id bigint;
+ declare @qry_id bigint;
     declare @mindate datetime;
     declare @maxdate datetime;
     declare @maxmonthstart datetime;
     declare @minmonthstart datetime;
-	declare @qry_type int;
-	declare @tblqryid table(qry_id int);
 	declare @minfilterdate datetime;
+	declare @tblqryid table(qry_id int);
 
 
     -----------------------------------  set dates  -------------------------------------  		
 
-    select @minmonthstart=min_date_any ,@maxmonthstart=max_date_any 
-				,@mindate=min_date_any,@maxdate=max_date_any FROM portal_redux.ref_lookup_max_date where id=12;
+    select @minmonthstart=min_date_any ,@maxmonthstart=max_date_any
+				  ,@mindate=min_date_any ,@maxdate=max_date_any FROM portal_redux.ref_lookup_max_date where id=13;
 
 	
 			if OBJECT_ID('tempDB..#age') is not null drop table #age;
@@ -388,7 +386,7 @@ from (
 
 
 				set @qry_id=(
-				select top 1 qry_id from portal_redux.cache_pbcw3_params
+				select top 1 qry_id from portal_redux.cache_pbcw4_params
 				where age_grouping_cd=left(@age_grouping_cd,20)
 				and cd_race_census=left(@race_cd,30) 
 				and pk_gndr=left(@gender_cd,10) 
@@ -414,7 +412,7 @@ from (
 		begin
 
 
-			INSERT INTO [portal_redux].[cache_pbcw3_params]
+			INSERT INTO [portal_redux].[cache_pbcw4_params]
 					(qry_id
 					, [age_grouping_cd]
 					,[cd_race_census]
@@ -429,7 +427,7 @@ from (
 					,[filter_access_type]
 					,[filter_allegation]
 					,[filter_finding]
-					,bin_dep_cd
+					, bin_dep_cd
 					, min_start_date
 					, max_start_date
 					,[cnt_qry]
@@ -437,7 +435,7 @@ from (
 					OUTPUT inserted.qry_ID into @tblqryid
 				select 
 					isnull((select max(qry_id) +1
-						from portal_redux.[cache_pbcw3_params]),1)
+						from portal_redux.[cache_pbcw4_params]),1)
 					,@age_grouping_cd
 					,@race_cd
 					,@gender_cd
@@ -456,28 +454,30 @@ from (
 					,@maxmonthstart
 					,1
 					,getdate()
-		
+				
+			
 			select @qry_id=qry_id from @tblqryid;
 			
 		end -- if @qry_Id is null
 		else -- if @qry_Id is null
 			begin
-						update portal_redux.cache_pbcw3_params
+						update portal_redux.cache_pbcw4_params
 									set cnt_qry=cnt_qry + 1,last_run_date=getdate()
 									where @qry_id=qry_id				
 			end
-
-			-- see if results are in cache as a subset of previously run query
+	
+	
+				-- see if results are in cache as a subset of previously run query
 		if OBJECT_ID('tempDB..#cachekeys') is not null drop table #cachekeys;
-		   select	([int_param_key] * power(10.0,9) ) +
-					([bin_dep_cd] * power(10.0,8) ) +
-					([bin_los_cd] * power(10.0,7) ) +
-					([bin_placement_cd] * power(10.0,6) ) +
-					([bin_ihs_svc_cd] * power(10.0,5) ) +
-					([cd_reporter_type] * power(10.0,3) ) + 
+		   select	([int_param_key] * power(10.0,9)) +
+					([bin_dep_cd] * power(10.0,8)) +
+					([bin_los_cd] * power(10.0,7)) +
+					([bin_placement_cd] * power(10.0,6)) +
+					([bin_ihs_svc_cd] * power(10.0,5)) +
+					([cd_reporter_type] * power(10.0,3)) + 
 					([cd_access_type] * power(10.0,2)) +
 					([cd_allegation] * 10.0) +
-					[cd_finding] as int_hash_key
+					[cd_finding] as [int_hash_key]
 					 ,int_param_key
 					 ,bin_dep_cd
 					 ,bin_los_cd
@@ -488,9 +488,10 @@ from (
 					 ,cd_allegation
 					 ,cd_finding
 					 ,0 as in_cache
-					 ,@qry_id as qry_id
+					 ,q.qry_id as qry_id
 				into #cachekeys
-				from (select distinct int_param_key from #prmlocdem) prm
+				from (select @qry_id qry_id) q  
+				cross join (select distinct int_param_key from #prmlocdem) prm
 				cross join (select distinct bin_los_cd from #los) los
 				cross join (select distinct bin_placement_cd from #nbrplc) plc
 				cross join (select distinct bin_ihs_svc_cd from #ihs) ihs
@@ -500,12 +501,17 @@ from (
 				cross join (select distinct cd_finding from #find) fnd
 				cross join (select distinct bin_dep_cd from #dep )dep
 
-			
+
+
+			create index idx_int_hash_key on #cachekeys(int_hash_key,in_cache);
+			create index idx_qryid_params on #cachekeys(qry_id,int_hash_key);
+			create index  idx_params on #cachekeys(int_param_key,bin_dep_cd,bin_los_cd,bin_placement_cd,bin_ihs_svc_cd,cd_reporter_type,cd_access_type,cd_allegation,cd_finding,in_cache);                   
+		
 			update cache
-			set in_cache=1,qry_id=pbcw3.qry_id
+			set in_cache=1,qry_id=pbcw4.qry_id
 			from #cachekeys cache
-			join [portal_redux].[cache_qry_param_pbcw3] pbcw3
-			on pbcw3.int_hash_key=cache.int_hash_key
+			join [portal_redux].[cache_qry_param_pbcw4] pbcw4
+			on pbcw4.int_hash_key=cache.int_hash_key
 
 
 
@@ -513,9 +519,9 @@ from (
 			begin
 						---  print 'qry_id is '  + str(@qry_id) 
 													
-													
-INSERT INTO [portal_redux].[cache_pbcw3_aggr]
-           ([qry_type]
+
+INSERT INTO [portal_redux].[cache_pbcw4_aggr]
+		([qry_type]
            ,[date_type]
            ,[cohort_entry_date]
            ,[int_param_key]
@@ -533,10 +539,11 @@ INSERT INTO [portal_redux].[cache_pbcw3_aggr]
            ,[init_cd_plcm_setng]
            ,[long_cd_plcm_setng]
            ,[county_cd]
-			,[family_setting_dcfs_prcntg]
-			,[family_setting_private_agency_prcntg]
-			,[relative_prcntg]
-			,[group_inst_care_prcntg]
+           ,[kincare]
+           ,bin_sibling_group_size
+           ,[all_together]
+           ,[some_together]
+           ,[none_together]
            ,[min_start_date]
            ,[max_start_date]
            ,[x1]
@@ -544,11 +551,12 @@ INSERT INTO [portal_redux].[cache_pbcw3_aggr]
            ,[insert_date]
            ,[qry_id]
            ,[cohort_begin_year]
-           ,[int_hash_key])
+           ,[int_hash_key]
+		   	,cnt_cohort)
 
-		SELECT    prtl_pbcw3.qry_type
-				, prtl_pbcw3.date_type 
-				, prtl_pbcw3.start_date
+		SELECT    prtl_pbcw4.qry_type
+				, prtl_pbcw4.date_type 
+				, prtl_pbcw4.start_date
 				, che.int_param_key
 				, dep.bin_dep_cd
 				, los.bin_los_cd
@@ -564,28 +572,32 @@ INSERT INTO [portal_redux].[cache_pbcw3_aggr]
 				, mtch.init_cd_plcm_setng
 				, mtch.long_cd_plcm_setng
 				, mtch.county_cd
-				, round((sum(Family_Setting_DCFS_Cnt)* 1.0000)/(sum(cnt_child) * 1.0000) * 100,2)   
-				, round((sum(Family_Setting_Private_Agency_Cnt)* 1.0000)/(sum(cnt_child) * 1.0000) * 100,2)   
-				, round((sum(Relative_Care)* 1.0000)/(sum(cnt_child) * 1.0000) * 100,2) 
-				, round((sum(Group_Inst_Care_Cnt)* 1.0000)/(sum(cnt_child) * 1.0000) * 100,2)
+				, kin.kincare
+				, sib.bin_sibling_group_size
+				, round(((sum(all_sib_together)/(sum(cnt_child)* 1.0000)) * 100),2) as All_Together
+				, round(((sum(some_sib_together)/(sum(cnt_child)* 1.0000)) * 100),2) as Some_Together
+				, round(((sum(no_sib_together)/(sum(cnt_child)* 1.0000)) * 100),2) as None_Together
 				, @minmonthstart as minmonthstart
 				, @maxmonthstart as maxmonthstart
 				, rand(convert(varbinary, newid())) [x1]
 				, rand(convert(varbinary, newid())) [x2]
 				, getdate() as insert_date
 				, che.qry_id
-				,year(prtl_pbcw3.start_date)
-				,che.int_hash_key
-			FROM portal_redux.ooh_point_in_time_measures prtl_pbcw3
-			join #prmlocdem mtch on mtch.int_match_param_key=prtl_pbcw3.int_match_param_key_mix
-			join #los los on los.match_code=prtl_pbcw3.max_bin_los_cd
-			join #nbrplc plc on plc.match_code=prtl_pbcw3.bin_placement_cd
-			join #ihs ihs on ihs.match_code=prtl_pbcw3.bin_ihs_svc_cd
-			join #rpt rpt on rpt.match_code=prtl_pbcw3.cd_reporter_type
-			join #access_type acc on acc.match_code=prtl_pbcw3.filter_access_type
-			join #algtn alg on alg.match_code=prtl_pbcw3.filter_allegation
-			join #find fnd on fnd.match_code=prtl_pbcw3.filter_finding
-			join #dep dep on dep.match_code=prtl_pbcw3.bin_dep_cd
+				, year(prtl_pbcw4.start_date)
+				, che.int_hash_key
+				, sum(cnt_child)
+			FROM portal_redux.ooh_point_in_time_measures prtl_pbcw4
+			join #prmlocdem mtch on mtch.int_match_param_key=prtl_pbcw4.int_match_param_key_mix
+			join #los los on los.match_code=prtl_pbcw4.max_bin_los_cd
+			join #nbrplc plc on plc.match_code=prtl_pbcw4.bin_placement_cd
+			join #ihs ihs on ihs.match_code=prtl_pbcw4.bin_ihs_svc_cd
+			join #rpt rpt on rpt.match_code=prtl_pbcw4.cd_reporter_type
+			join #access_type acc on acc.match_code=prtl_pbcw4.filter_access_type
+			join #algtn alg on alg.match_code=prtl_pbcw4.filter_allegation
+			join #find fnd on fnd.match_code=prtl_pbcw4.filter_finding
+			join #dep dep on dep.match_code=prtl_pbcw4.bin_dep_cd
+			join portal_redux.prm_kin kin on kin.match_code=prtl_pbcw4.kincare
+			join portal_redux.prm_sib  sib on sib.match_code=prtl_pbcw4.bin_sibling_group_size
 			join #cachekeys che on che.int_hash_key=((mtch.int_param_key * power(10.0,9)) +
 				(dep.[bin_dep_cd] * power(10.0,8)) +
 				(los.[bin_los_cd] * power(10.0,7)) +
@@ -596,33 +608,37 @@ INSERT INTO [portal_redux].[cache_pbcw3_aggr]
 				(alg.[cd_allegation] * 10.0) +
 				fnd.[cd_finding])
 				and che.in_cache=0
-			where [fl_w3]=1 
-			group by prtl_pbcw3.qry_type
-				,prtl_pbcw3.date_type 
-				,prtl_pbcw3.start_date
-				,year(prtl_pbcw3.start_date)
-				,che.int_hash_key
-				,che.int_param_key
-				,che.qry_id
-				,dep.bin_dep_cd
-				,los.bin_los_cd
-				,plc.bin_placement_cd
-				,ihs.bin_ihs_svc_cd
-				,rpt.cd_reporter_type
-				,acc.cd_access_type
-				,alg.cd_allegation
-				,fnd.cd_finding
-				,mtch.age_grouping_cd
-				,mtch.cd_race_census
-				,mtch.pk_gndr
-				,mtch.init_cd_plcm_setng
-				,mtch.long_cd_plcm_setng
-				,mtch.county_cd
-	
+			where [fl_w4]=1 
+			group by kin.kincare
+				, prtl_pbcw4.qry_type
+				, prtl_pbcw4.date_type 
+				, prtl_pbcw4.start_date
+				, year(prtl_pbcw4.start_date)
+				, che.int_hash_key
+				, che.int_param_key
+				, che.qry_id
+				, sib.bin_sibling_group_size
+				, dep.bin_dep_cd
+				, los.bin_los_cd
+				, plc.bin_placement_cd
+				, ihs.bin_ihs_svc_cd
+				, rpt.cd_reporter_type
+				, acc.cd_access_type
+				, alg.cd_allegation
+				, fnd.cd_finding
+				, mtch.age_grouping_cd
+				, mtch.cd_race_census
+				, mtch.pk_gndr
+				, mtch.init_cd_plcm_setng
+				, mtch.long_cd_plcm_setng
+				, mtch.county_cd
+					
 
-						update statistics portal_redux.cache_pbcw3_aggr
+		
+		
+						update statistics portal_redux.cache_pbcw4_aggr
 
-						INSERT INTO [portal_redux].[cache_qry_param_pbcw3]
+						INSERT INTO [portal_redux].[cache_qry_param_pbcw4]
 								   ([int_param_key]
 								   ,bin_dep_cd
 								   ,[bin_los_cd]
@@ -641,7 +657,7 @@ INSERT INTO [portal_redux].[cache_pbcw3_aggr]
 								   ,[qry_id]
 								   ,[int_hash_key])
 						select ck.[int_param_key]
-								    ,bin_dep_cd
+									,bin_dep_cd
 								   ,[bin_los_cd]
 								   ,[bin_placement_cd]
 								   ,[bin_ihs_svc_cd]
@@ -650,94 +666,106 @@ INSERT INTO [portal_redux].[cache_pbcw3_aggr]
 								   ,[cd_allegation]
 								   ,[cd_finding]
 								   ,q.[age_grouping_cd]
-								   ,q.[cd_race_census]
+								   ,q.cd_race_census
 								   ,q.[pk_gndr]
 								   ,q.[init_cd_plcm_setng]
 								   ,q.[long_cd_plcm_setng]
 								   ,q.county_cd
-								   ,qry_id
+								   ,@qry_id
 								   ,[int_hash_key]
 						from #cachekeys ck
-						join (select distinct int_param_key,age_grouping_cd,cd_race_census,pk_gndr,
-							init_cd_plcm_setng,long_cd_plcm_setng,county_cd 
-						from #prmlocdem)  q on q.int_param_key=ck.int_param_key
+						join (select distinct int_param_key,age_grouping_cd,cd_race_census,pk_gndr,init_cd_plcm_setng,long_cd_plcm_setng,county_cd from #prmlocdem)  q on q.int_param_key=ck.int_param_key
 						where ck.in_cache=0;
+
+
+
+
+						
 	
-	
-						update statistics portal_redux.cache_qry_param_pbcw3;
+						update statistics portal_redux.cache_qry_param_pbcw4;
 
 						
 					  end -- if @qry_id is null
 
-		if @fl_return_results=1					
-			            select
-
-						qry_type "qry_type_poc1_first_unique"
-						, date_type
-						,pbcw3.cohort_entry_date as "Month"
-						, pbcw3.age_grouping_cd
-						, ref_age.age_grouping "Age Grouping"
-						, pbcw3.cd_race as ethnicity_cd
-						, ref_eth.tx_race_census as  "Race/Ethnicity" 
-						, pbcw3.pk_gndr as gender_cd
-						, ref_gdr.tx_gndr  "Gender" 
-						, pbcw3.init_cd_plcm_setng  
-						, ref_fpl.tx_plcm_setng  "Initial Placement"
-						, pbcw3.long_cd_plcm_setng  
-						, ref_lpl.tx_plcm_setng  "Longest Placement"
-						, pbcw3.county_cd
-						, ref_cnty.county_desc as "County"
-						, pbcw3.bin_dep_cd as  "dependency_cd"
-						, ref_dep.bin_dep_desc as "Dependency"
-						, pbcw3.bin_los_cd
-						, ref_los.bin_los_desc as "Length of Service Desc"
-						, pbcw3.bin_placement_cd
-						, ref_plc.bin_placement_desc "Placement Count Desc"
-						, pbcw3.bin_ihs_svc_cd
-						, ref_ihs.bin_ihs_svc_tx "In-Home Service Desc"
-						, pbcw3.cd_reporter_type
-						, ref_rpt.tx_reporter_type as "Reporter Desc"
-						, pbcw3.cd_access_type
-						, ref_acc.tx_access_type as "Access type desc"
-						, pbcw3.cd_allegation
-						, ref_alg.tx_allegation "Allegation" 
-						, pbcw3.cd_finding
-						, ref_fnd.tx_finding  "Finding"
-            , family_setting_dcfs_prcntg as "Family Setting (State Foster Home)"
-            , family_setting_private_agency_prcntg as "Family Setting (Private Foster Home)"
-            , relative_prcntg  as "Family Setting (Kin Placement)"
-            , group_inst_care_prcntg as "Non-Family Setting"
-            FROM portal_redux.cache_pbcw3_aggr  pbcw3
-            join #cachekeys ck on ck.qry_id=pbcw3.qry_id and ck.int_hash_key=pbcw3.int_hash_key
-            join portal_redux.ref_filter_dependency ref_dep on ref_dep.bin_dep_cd=pbcw3.bin_dep_cd
-                   and pbcw3.cohort_entry_date >=@minfilterdate
-            join portal_redux.ref_filter_los ref_los on ref_los.bin_los_cd=pbcw3.bin_los_cd
-			join [portal_redux].[ref_age_cdc_census_mix]  ref_age on ref_age.age_grouping_cd=pbcw3.age_grouping_cd
-			join portal_redux.ref_lookup_gender ref_gdr on ref_gdr.[pk_gndr]=pbcw3.pk_gndr
-			join portal_redux.ref_lookup_ethnicity_census ref_eth on ref_eth.[cd_race_census] = pbcw3.cd_race
-			join [portal_redux].[ref_lookup_plcmnt]  ref_fpl on ref_fpl.[cd_plcm_setng] = pbcw3.init_cd_plcm_setng
-			join [portal_redux].[ref_lookup_plcmnt]  ref_lpl on ref_lpl.[cd_plcm_setng] = pbcw3.long_cd_plcm_setng
-			join [portal_redux].[ref_filter_nbr_placement] ref_plc on ref_plc.[bin_placement_cd]=pbcw3.[bin_placement_cd]
-            join portal_redux.ref_lookup_county ref_cnty on ref_cnty.county_cd=pbcw3.county_cd
-            join portal_redux.ref_filter_reporter_type ref_rpt on ref_rpt.cd_reporter_type=pbcw3.cd_reporter_type
-			 join portal_redux.ref_filter_ihs_services ref_ihs on ref_ihs.[bin_ihs_svc_cd]=pbcw3.bin_ihs_svc_cd
-            join portal_redux.ref_filter_access_type ref_acc on ref_acc.cd_access_type=pbcw3.cd_access_type
-			join portal_redux.ref_filter_allegation ref_alg on ref_alg.cd_allegation=pbcw3.cd_allegation
-			join portal_redux.ref_filter_finding ref_fnd on ref_fnd.cd_finding=pbcw3.cd_finding
-            order by   pbcw3.bin_dep_cd asc
-            ,qry_type
+		if @fl_return_results=1
+					   select
+									 pbcw4.cohort_entry_date  "Cohort Entry Date"
+									, qry_type "qry_type_poc1_first_unique"
+									, date_type
+									, pbcw4.age_grouping_cd
+									, ref_age.age_grouping  "age_grouping"
+									, pbcw4.cd_race  ethnicity_cd
+									, ref_eth.tx_race_census "Race/Ethnicity" 
+									, pbcw4.pk_gndr as gender_cd
+									, ref_gdr.tx_gndr "Gender" 
+									, pbcw4.init_cd_plcm_setng
+									, ref_fpl.tx_plcm_setng  "Initial Placement"
+									, pbcw4.long_cd_plcm_setng  
+									, ref_lpl.tx_plcm_setng  "Longest Placement"
+									, pbcw4.county_cd
+									, ref_cnty.county_cd as "County"
+									, pbcw4.bin_dep_cd as  "dependency_cd"
+									, ref_dep.bin_dep_desc as "Dependency"
+									, pbcw4.bin_los_cd
+									, ref_los.bin_los_desc as "Length of Service Desc"
+									, pbcw4.bin_placement_cd
+									, ref_plc.bin_placement_desc "Placement Count Desc"
+									, pbcw4.bin_ihs_svc_cd
+									, ref_ihs.bin_ihs_svc_tx "In-Home Service Desc"
+									, pbcw4.cd_reporter_type
+									, ref_rpt.tx_reporter_type as "Reporter Desc"
+									, pbcw4.cd_access_type
+									, ref_acc.tx_access_type as "Access type desc"
+									, pbcw4.cd_allegation
+									, ref_alg.tx_allegation "Allegation" 
+									, pbcw4.cd_finding
+									, ref_fnd.tx_finding "Finding"
+									, ref_kin.placement_type  "Placement Type"  
+									, pbcw4.bin_sibling_group_size
+									, ref_sib.nbr_sibling_desc "Sibling Group Size"
+									, all_together  as All_Together
+									, some_together as Some_Together
+									, none_together as None_Together
+									, cnt_cohort
+			--						, round(cnt_cohort + 2 * sqrt(-2 * log(pbcw4.x1)) 
+			--										* cos(2*pi()*pbcw4.x2),0) as "Number in Cohort"
+            FROM portal_redux.cache_pbcw4_aggr  pbcw4
+            join #cachekeys ck on ck.qry_id=pbcw4.qry_id and ck.int_hash_key=pbcw4.int_hash_key
+            join portal_redux.ref_filter_dependency ref_dep on ref_dep.bin_dep_cd=pbcw4.bin_dep_cd
+				and pbcw4.cohort_entry_date >=@minfilterdate
+			join portal_redux.ref_age_cdc_census_mix ref_age on ref_age.age_grouping_cd=pbcw4.age_grouping_cd
+			join portal_redux.ref_lookup_ethnicity_census ref_eth on ref_eth.cd_race_census=pbcw4.cd_race
+			join portal_redux.ref_lookup_gender ref_gdr on ref_gdr.pk_gndr=pbcw4.pk_gndr
+            join portal_redux.ref_filter_los ref_los on ref_los.bin_los_cd=pbcw4.bin_los_cd
+			join portal_redux.ref_filter_nbr_placement ref_plc on ref_plc.bin_placement_cd=pbcw4.bin_placement_cd
+            join portal_redux.ref_lookup_plcmnt ref_fpl on ref_fpl.cd_plcm_setng=pbcw4.init_cd_plcm_setng
+            join portal_redux.ref_lookup_plcmnt ref_lpl on ref_lpl.cd_plcm_setng=pbcw4.long_cd_plcm_setng
+            join portal_redux.ref_lookup_county ref_cnty on ref_cnty.county_cd=pbcw4.county_cd
+            join portal_redux.ref_filter_reporter_type ref_rpt on ref_rpt.cd_reporter_type=pbcw4.cd_reporter_type
+			join portal_redux.ref_filter_ihs_services ref_ihs on ref_ihs.bin_ihs_svc_cd=pbcw4.bin_ihs_svc_cd
+            join portal_redux.ref_filter_access_type ref_acc on ref_acc.cd_access_type=pbcw4.cd_access_type
+			join portal_redux.ref_filter_allegation ref_alg on ref_alg.cd_allegation=pbcw4.cd_allegation
+			join portal_redux.ref_filter_finding ref_fnd on ref_fnd.cd_finding=pbcw4.cd_finding
+            join portal_redux.[ref_bin_sibling_group_size] ref_sib on ref_sib.bin_sibling_group_size=pbcw4.bin_sibling_group_size
+			join prtl_ref_kincare ref_kin on ref_kin.kincare=pbcw4.kincare
+  order by pbcw4.kincare asc,
+                pbcw4.bin_dep_cd asc
+                ,qry_type
                 ,date_type
                 ,Cohort_Entry_date asc
-                ,pbcw3.age_grouping_cd asc
+                ,age_grouping_cd asc
                     ,gender_cd asc
                     ,ethnicity_cd asc
                     ,init_cd_plcm_setng asc
                     ,long_cd_plcm_setng asc
                     ,county_cd asc
-                    , pbcw3.bin_los_cd asc
-                    , pbcw3.bin_placement_cd asc
-                    , pbcw3.bin_ihs_svc_cd asc
-                    , pbcw3.cd_reporter_type
-                    , pbcw3.cd_access_type
-                    , pbcw3.cd_allegation
-                    , pbcw3.cd_finding;
+                    , pbcw4.bin_los_cd asc
+                    , pbcw4.bin_placement_cd asc
+                    , pbcw4.bin_ihs_svc_cd asc
+                    , pbcw4.cd_reporter_type
+                    , pbcw4.cd_access_type
+                    , pbcw4.cd_allegation
+                    , pbcw4.cd_finding
+                    , pbcw4.bin_sibling_group_size;
+
+END;
