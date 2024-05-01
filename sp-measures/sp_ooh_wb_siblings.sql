@@ -674,7 +674,8 @@ INSERT INTO [portal_redux].[cache_pbcw4_aggr]
 								   ,@qry_id
 								   ,[int_hash_key]
 						from #cachekeys ck
-						join (select distinct int_param_key,age_grouping_cd,cd_race_census,pk_gndr,init_cd_plcm_setng,long_cd_plcm_setng,county_cd from #prmlocdem)  q on q.int_param_key=ck.int_param_key
+						join (select distinct int_param_key,age_grouping_cd,cd_race_census,pk_gndr,init_cd_plcm_setng,
+						long_cd_plcm_setng,county_cd from #prmlocdem)  q on q.int_param_key=ck.int_param_key
 						where ck.in_cache=0;
 
 

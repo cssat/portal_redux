@@ -1,11 +1,6 @@
+-- exec statement
 
 
-
---/****** Object:  StoredProcedure [portal_redux].[sp_ooh_pit_counts]    Script Date: 6/19/2014 2:24:18 PM ******/
---SET ANSI_NULLS ON
---GO
---SET QUOTED_IDENTIFIER ON
---GO
 CREATE PROCEDURE [portal_redux].[sp_ooh_pit_counts] (
 	@date VARCHAR(3000)
 	,@age_grouping_cd VARCHAR(30)
@@ -22,7 +17,7 @@ CREATE PROCEDURE [portal_redux].[sp_ooh_pit_counts] (
 	,@filter_allegation VARCHAR(30)
 	,@filter_finding VARCHAR(30)
 	,@bin_dep_cd VARCHAR(20)
-	,@fl_return_results VARCHAR(30) -- 1 = yes; 0 = no (for loading cache tables set to 0)
+	,@fl_return_results VARCHAR(30) = '1' -- 1 = yes; 0 = no (for loading cache tables set to 0)
 	,@debug VARCHAR(30) = 0
 	)
 AS
@@ -266,7 +261,7 @@ INSERT INTO #age (
 	)
 SELECT age_grouping_cd
 	,match_code
-FROM portal_redux.prm_age_census
+FROM prm_age_census
 JOIN [portal_redux].[fn_ReturnStrTableFromList](@age_grouping_cd, 0) ON cast(arrValue AS VARCHAR(30)) = age_grouping_cd;
 
 UPDATE STATISTICS #age;
@@ -280,7 +275,7 @@ INSERT INTO #eth (
 SELECT eth.cd_race
 	,eth.cd_origin
 	,eth.match_code
-FROM portal_redux.prm_eth_census eth
+FROM prm_eth_census eth
 JOIN [portal_redux].[fn_ReturnStrTableFromList](@race_cd, 0) ON cast(arrValue AS VARCHAR(30)) = eth.cd_race
 
 UPDATE STATISTICS #eth
@@ -292,7 +287,7 @@ INSERT INTO #gdr (
 	)
 SELECT pk_gndr
 	,match_code
-FROM portal_redux.prm_gndr gdr
+FROM prm_gndr gdr
 JOIN portal_redux.fn_ReturnStrTableFromList(@gender_cd, 0) ON cast(arrValue AS VARCHAR(30)) = gdr.pk_gndr
 
 UPDATE STATISTICS #gdr
@@ -304,7 +299,7 @@ INSERT INTO #fpl (
 	)
 SELECT fpl.init_cd_plcm_setng
 	,fpl.match_code
-FROM portal_redux.prm_fpl fpl
+FROM prm_fpl fpl
 JOIN portal_redux.fn_ReturnStrTableFromList(@init_cd_plcm_setng, 0) sel ON cast(sel.arrValue AS VARCHAR(30)) = fpl.init_cd_plcm_setng
 
 UPDATE STATISTICS #fpl
@@ -316,7 +311,7 @@ INSERT INTO #lpl (
 	)
 SELECT lpl.long_cd_plcm_setng
 	,lpl.match_code
-FROM portal_redux.prm_lpl lpl
+FROM prm_lpl lpl
 JOIN portal_redux.fn_ReturnStrTableFromList(@long_cd_plcm_setng, 0) sel ON cast(sel.arrValue AS VARCHAR(30)) = lpl.long_cd_plcm_setng
 
 UPDATE STATISTICS #lpl
@@ -328,7 +323,7 @@ INSERT INTO #cnty (
 	)
 SELECT cnty.cd_cnty
 	,cnty.match_code
-FROM portal_redux.prm_cnty cnty
+FROM prm_cnty cnty
 JOIN portal_redux.fn_ReturnStrTableFromList(@County_Cd, 0) sel ON cast(sel.arrValue AS VARCHAR(30)) = cnty.cd_cnty
 
 UPDATE STATISTICS #cnty
@@ -341,7 +336,7 @@ INSERT INTO #los (
 SELECT los.bin_los_cd
 	,los.match_code
 FROM [portal_redux].[fn_ReturnStrTableFromList](@bin_los_cd, 0)
-JOIN portal_redux.[prm_los_max_bin_los_cd] los ON los.bin_los_cd = cast(arrValue AS VARCHAR(30));
+JOIN [prm_los_max_bin_los_cd] los ON los.bin_los_cd = cast(arrValue AS VARCHAR(30));
 
 UPDATE STATISTICS #los
 
@@ -352,7 +347,7 @@ INSERT INTO #nbrplc (
 	)
 SELECT plc.bin_placement_cd
 	,plc.match_code
-FROM portal_redux.prm_plc plc
+FROM prm_plc plc
 JOIN portal_redux.fn_ReturnStrTableFromList(@bin_placement_cd, 0) sel ON cast(sel.arrValue AS VARCHAR(30)) = plc.bin_placement_cd
 
 UPDATE STATISTICS #nbrplc
@@ -364,7 +359,7 @@ INSERT INTO #ihs (
 	)
 SELECT ihs.bin_ihs_svc_cd
 	,ihs.match_code
-FROM portal_redux.prm_ihs ihs
+FROM prm_ihs ihs
 JOIN portal_redux.fn_ReturnStrTableFromList(@bin_ihs_svc_cd, 0) sel ON cast(sel.arrValue AS VARCHAR(30)) = ihs.bin_ihs_svc_cd
 
 UPDATE STATISTICS #ihs
@@ -376,7 +371,7 @@ INSERT INTO #rpt (
 	)
 SELECT rpt.cd_reporter_type
 	,rpt.match_code
-FROM portal_redux.prm_rpt rpt
+FROM prm_rpt rpt
 JOIN portal_redux.fn_ReturnStrTableFromList(@cd_reporter_type, 0) sel ON cast(sel.arrValue AS VARCHAR(30)) = rpt.cd_reporter_type
 
 UPDATE STATISTICS #rpt
@@ -390,7 +385,7 @@ INSERT INTO #access_type (
 SELECT acc.cd_access_type
 	,acc.match_code
 	,acc.match_code
-FROM portal_redux.prm_acc acc
+FROM prm_acc acc
 JOIN portal_redux.fn_ReturnStrTableFromList(@filter_access_type, 0) sel ON cast(sel.arrValue AS VARCHAR(30)) = acc.cd_access_type
 
 UPDATE STATISTICS #access_type;
@@ -405,7 +400,7 @@ INSERT INTO #algtn (
 SELECT alg.cd_allegation
 	,alg.match_code
 	,alg.match_code
-FROM portal_redux.prm_alg alg
+FROM prm_alg alg
 JOIN portal_redux.fn_ReturnStrTableFromList(@filter_allegation, 0) sel ON cast(sel.arrValue AS VARCHAR(30)) = alg.cd_allegation
 
 UPDATE STATISTICS #algtn
@@ -420,7 +415,7 @@ INSERT INTO #find (
 SELECT fnd.cd_finding
 	,fnd.match_code
 	,fnd.match_code
-FROM portal_redux.prm_fnd fnd
+FROM prm_fnd fnd
 JOIN portal_redux.fn_ReturnStrTableFromList(@filter_finding, 0) sel ON cast(sel.arrValue AS VARCHAR(30)) = fnd.cd_finding
 
 UPDATE STATISTICS #find
@@ -433,7 +428,7 @@ INSERT INTO #dep (
 SELECT dep.bin_dep_cd
 	,dep.match_code
 FROM [portal_redux].[fn_ReturnStrTableFromList](@bin_dep_cd, 0)
-JOIN portal_redux.prm_dep dep ON dep.bin_dep_cd = cast(arrValue AS VARCHAR(30));
+JOIN prm_dep dep ON dep.bin_dep_cd = cast(arrValue AS VARCHAR(30));
 
 UPDATE STATISTICS #dep;
 
@@ -828,7 +823,7 @@ BEGIN
 		,mtch.long_cd_plcm_setng
 		,cnty.cd_cnty
 
-	UPDATE cache_poc1ab_aggr
+	UPDATE portal_redux.cache_poc1ab_aggr
 	SET cache_poc1ab_aggr.fl_include_perCapita = 0
 	-- select pop_cnt, cache_poc1ab_aggr.*
 	FROM portal_redux.cache_poc1ab_aggr
