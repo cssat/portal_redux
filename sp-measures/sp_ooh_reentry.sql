@@ -587,8 +587,8 @@ from (
 								, mtch.county_cd
 								, mnth as reentry_within_month
 								, sum(prtl_pbcp5.discharge_count)/(tot_cohort.tot_episodes) * 100 as reentry_rate
-								, @minmonthstart as minmonthstart
-								, @maxmonthstart as maxmonthstart
+								, @minmonthstart as min_start_date
+								, @maxmonthstart as max_start_date
 								, rand(convert(varbinary, newid())) [x1]
 								, rand(convert(varbinary, newid())) [x2]
 								, getdate() as insert_date
@@ -676,7 +676,7 @@ from (
 									, acc.cd_access_type
 									, alg.cd_allegation
 									, fnd.cd_finding
-									, mnth 
+									, mnth
 						
 						
 						

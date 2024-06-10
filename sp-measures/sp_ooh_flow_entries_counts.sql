@@ -565,7 +565,6 @@ from (
 								,int_hash_key
 								,qry_id
 								,start_year,fl_include_perCapita)
-
 						SELECT    prtl_poc1ab_entries.qry_type
 								, prtl_poc1ab_entries.date_type 
 								, prtl_poc1ab_entries.[start_date]

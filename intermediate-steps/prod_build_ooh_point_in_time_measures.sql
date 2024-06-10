@@ -351,8 +351,8 @@ begin
 			, coalesce(sum(iif(allorsomequalsibs_together = 0 , 1 , 0 )) ,0)as  no_sib_together
 			, count(distinct id_prsn_child)  as cnt_child_unique
 			, count(id_prsn_child) as cnt_child
+			,iif(qualEvent=1 and bin_sibling_group_size > 0 and date_type=2,1,0) as fl_w4
 			,fl_w3
-			,iif(qualEvent=1 and bin_sibling_group_size > 0 and date_type=2,1,0) fl_w4
 			,fl_poc1ab
 			from #evt
 			group by 		[start_date]	
