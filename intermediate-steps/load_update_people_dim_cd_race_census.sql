@@ -1,11 +1,5 @@
 -- update people_dim table after initial load
 
-ALTER TABLE portal_redux.PEOPLE_DIM
-ADD cd_race_census INT,
-	tx_race_census VARCHAR(200),
-	census_hispanic_latino_origin_cd INT;
-
-
 
 UPDATE portal_redux.PEOPLE_DIM
 SET cd_race_census = cd_race,

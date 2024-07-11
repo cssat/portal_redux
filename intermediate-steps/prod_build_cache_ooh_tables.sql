@@ -619,7 +619,7 @@ CREATE TABLE portal_redux.cache_qry_param_poc1ab_entries (
 CREATE procedure [portal_redux].[prod_build_cache_ooh_tables]( @prm_procedure_id int )
 as
 --  @prm_procedure_id is ID from ref_lookup_max_date :  0 means run all
-if @permission_key = (select cutoff_date from portal_redux.ref_Last_DW_Transfer )
+--if @permission_key = (select cutoff_date from portal_redux.ref_Last_DW_Transfer )
 begin
 	declare @loop int
 	declare @date varchar(50)

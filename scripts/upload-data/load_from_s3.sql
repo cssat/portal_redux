@@ -2,12 +2,12 @@
 -- 75 files in total
 
 -- **BEFORE RUNNING**: folders are labeled by quarter
--- 		find & replace all '2024-Q2' with current year & quarter in below statement
+-- 		find & replace all '2024-Q2' with current year & quarter in below statements
 
 -- 		run to review tasks
 -- EXEC msdb.dbo.rds_gather_file_details;
 --		(task number will be returned)
-
+--
 -- SELECT * FROM msdb.dbo.rds_fn_list_file_details(*task number here*);
 --  	(takes at least 10 min before showing results)
 

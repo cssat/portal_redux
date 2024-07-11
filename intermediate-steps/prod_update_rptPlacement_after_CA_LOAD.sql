@@ -1,48 +1,4 @@
-ALTER TABLE portal_redux.rptPlacement
-	ADD dependency_dt                  DATETIME       NULL,
-    fl_dep_exist                       INT            NULL,
-    id_intake_fact                     INT            NULL,
-    age_at_removal_mos                 INT            NULL,
-    first_removal_dt                   DATETIME       NULL,
-	latest_removal_dt                  DATETIME       NULL,
-	child_eps_rank                     INT            NULL,
-	child_cnt_episodes                 INT            NULL,
-	cd_race_census                     INT            NULL,
-	census_hispanic_latino_origin_cd   CHAR(1)		  NULL,
-	initial_id_placement_fact          INT            NULL,
-	longest_id_placement_fact          INT            NULL,
-	next_reentry_date                  DATETIME       NULL,
-	days_to_reentry                    INT            NULL,
-	cd_discharge_type                  INT            NULL,
-	max_bin_los_cd                     INT            NULL,
-	bin_dep_cd                         INT            NULL,
-	bin_ihs_svc_cd                     INT            NULL,
-	dur_days                           INT            NULL,
-	exit_within_month_mult3            INT            NULL,
-	nxt_reentry_within_min_month_mult3 INT            NULL,
-	int_filter_service_category        INT            NULL,
-	filter_service_budget              INT            NULL,
-	nbr_events                         INT            NULL,
-	bin_placement_cd                   INT            NULL,
-	nbr_ooh_events                     INT            NULL,
-	init_cd_plcm_setng                 INT            NULL,
-	long_cd_plcm_setng                 INT            NULL,
-	pk_gndr                            INT            NULL,
-	removal_county_cd                  INT            NULL;
 
-	
-ALTER TABLE portal_redux.rptPlacement_Events
-	ADD id_placement_fact        INT           NULL,
-    cd_srvc                      INT           NULL,
-    id_plcmnt_evnt	             INT           NULL,
-    cd_plcmnt_evnt               CHAR (3)      NULL,
-    prtl_cd_plcm_setng           INT           NULL,
-    cd_epsd_type                 INT           NULL,
-    cd_end_rsn                   INT           NULL,
-    derived_county               INT           NULL,
-    id_provider_dim_caregiver    INT           NULL;
-	
-	
 		update portal_redux.rptPlacement_Events
 		set end_date='9999-12-31'
 		where end_date is null;
@@ -53,7 +9,7 @@ ALTER TABLE portal_redux.rptPlacement_Events
 
 		update portal_redux.rptPlacement
 		set discharge_dt='9999-12-31'
-		where discharge_dt is null;
+		where discharge_dt is null; 
 		
 		update portal_redux.rptPlacement_events
 		set [18bday]=dateadd(yy,18,birthdate);

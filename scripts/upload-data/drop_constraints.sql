@@ -20,7 +20,7 @@ ALTER TABLE portal_redux.ALLEGATION_FACT
 DROP CONSTRAINT fk_ALLEGATION_FACT_ID_ABUSE_TYPE_DIM,
 	CONSTRAINT fk_ALLEGATION_FACT_ID_CASE_DIM,
 	CONSTRAINT fk_ALLEGATION_FACT_ID_FINDINGS_DIM,
-	CONSTRAINT fk_ALLEGATION_FACT_ID_INTAKE_FACT,
+	--CONSTRAINT fk_ALLEGATION_FACT_ID_INTAKE_FACT, -- issues with this line
 	CONSTRAINT fk_ALLEGATION_FACT_ID_INVESTIGATION_ASSESSMENT_FACT,
 	CONSTRAINT fk_ALLEGATION_FACT_ID_PEOPLE_DIM_SUBJECT,
 	CONSTRAINT fk_ALLEGATION_FACT_ID_RELATIONSHIP_DIM;
@@ -278,19 +278,6 @@ DROP CONSTRAINT fk_REPEAT_MALTREATMENT_FACT_ID_CALENDAR_DIM_PRIOR,
 	CONSTRAINT fk_REPEAT_MALTREATMENT_FACT_ID_LOCATION_DIM_PRIMARY_WORKER,
 	CONSTRAINT fk_REPEAT_MALTREATMENT_FACT_ID_PEOPLE_DIM_VICTIM,
 	CONSTRAINT fk_REPEAT_MALTREATMENT_FACT_ID_PLACEMENT_TYPE_DIM;
-
-
-ALTER TABLE portal_redux.rptPlacement_Events
-DROP COLUMN id_placement_fact,
-			cd_srvc,
-			id_plcmnt_evnt,
-			cd_plcmnt_evnt,
-			prtl_cd_plcm_setng,
-			cd_epsd_type,
-			cd_end_rsn,
-			derived_county,
-			id_provider_dim_caregiver,
-			[18bday];
 		
 
 ALTER TABLE portal_redux.rptPlacement
@@ -324,14 +311,19 @@ DROP COLUMN dependency_dt,
 			long_cd_plcm_setng,
 			pk_gndr,
 			removal_county_cd,
-			cd_current_service,
-			cd_subctgry,
-			cd_exit_reason,
-			cd_lgl_stat,
-			cd_dsch_rsn,
-			cd_plcm_dsch_rsn,
-			cd_tribe_name,
-			cd_last_end_rsn,
+			[18bday];
+
+
+ALTER TABLE portal_redux.rptPlacement_Events
+DROP COLUMN id_placement_fact,
+			cd_srvc,
+			id_plcmnt_evnt,
+			cd_plcmnt_evnt,
+			prtl_cd_plcm_setng,
+			cd_epsd_type,
+			cd_end_rsn,
+			derived_county,
+			id_provider_dim_caregiver,
 			[18bday];
 
 
