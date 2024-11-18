@@ -34,7 +34,7 @@
 		and rptPlacement_Events.cd_plcm_setng is null;
 		
 		update portal_redux.rptPlacement
-		set removal_county_cd = iif(cd_cnty=41,40,isnull(cd_cnty,cd_county)) -- 41 = CONVERSION, 40 = Other/Out of State
+		set removal_county_cd = iif(cd_cnty=41,40,isnull(cd_cnty,cd_county)); -- 41 = CONVERSION, 40 = Other/Out of State
 
 		--update rptPlacement
 		--set removal_county_cd=cnty.county_cd
@@ -69,7 +69,7 @@
 		--	where eps.removal_county_cd is null
 
 		update  portal_redux.rptplacement_events
-		set  derived_county =null
+		set  derived_county =null;
 
 		update evt
 		set  derived_county = ( case when pd2.CD_PHYS_COUNTY between 1 and 39 then pd2.CD_PHYS_COUNTY 
@@ -80,7 +80,7 @@
 		join portal_redux.PROVIDER_DIM pd on pf.ID_PROVIDER_DIM_CAREGIVER =pd.ID_PROVIDER_DIM
 		left join portal_redux.provider_dim pd2 on pd2.ID_PRVD_ORG=evt.id_prvd_org_caregiver and evt.begin_date between pd2.DT_ROW_BEGIN and pd2.DT_ROW_END
 		--join LOCATION_DIM ld on ld.ID_LOCATION_DIM=pf.ID_LOCATION_DIM_PLACEMENT
-		join portal_redux.LOCATION_DIM wd on wd.ID_LOCATION_DIM=pf.ID_LOCATION_DIM_WORKER
+		join portal_redux.LOCATION_DIM wd on wd.ID_LOCATION_DIM=pf.ID_LOCATION_DIM_WORKER;
 
 		--update eps  
 		--set eps.removal_county_cd=derived_county
@@ -92,7 +92,7 @@
 		update portal_redux.rptPlacement_Events
 		set cd_end_rsn = prd.cd_end_rsn
 		from portal_redux.PLACEMENT_RESULT_DIM prd 
-		where prd.TX_END_RSN=portal_redux.rptPlacement_Events.tx_end_rsn
+		where prd.TX_END_RSN=portal_redux.rptPlacement_Events.tx_end_rsn;
 
 		
 
@@ -100,14 +100,14 @@
 		set  rptPlacement_events.cd_epsd_type = ptd.cd_epsd_type
 		from portal_redux.placement_fact pf
 		join portal_redux.PLACEMENT_TYPE_DIM ptd on pf.ID_PLACEMENT_TYPE_DIM=pf.ID_PLACEMENT_TYPE_DIM
-		where pf.id_placement_fact=rptPlacement_events.id_placement_fact
+		where pf.id_placement_fact=rptPlacement_events.id_placement_fact;
 
 
 		update portal_redux.rptPlacement_events
 		set cd_srvc=std.CD_SRVC
 		from portal_redux.PLACEMENT_FACT pf 
 		join portal_redux.SERVICE_TYPE_DIM std on pf.ID_SERVICE_TYPE_DIM=std.ID_SERVICE_TYPE_DIM
-		where rptPlacement_events.id_placement_fact=pf.ID_PLACEMENT_FACT
+		where rptPlacement_events.id_placement_fact=pf.ID_PLACEMENT_FACT;
 
 
 
@@ -124,14 +124,14 @@
 										when cd_plcm_setng in (12,13) then 10
 										when cd_plcm_setng =15 then 11
 										when cd_plcm_setng =18 then 13
-									end 
+									end;
 
 					update R
 					set id_plcmnt_evnt=plc.id_plcmnt_evnt
 					from portal_redux.rptPlacement_Events r
 					,portal_redux.ref_lookup_placement_event plc 
 					where plc.id_plcmnt_evnt=10
-					and R.id_plcmnt_evnt is null
+					and R.id_plcmnt_evnt is null;
 
 
 
@@ -165,7 +165,7 @@
 					set id_plcmnt_evnt=plc.id_plcmnt_evnt 
 					from portal_redux.rptPlacement_Events R
 					join portal_redux.[ref_lookup_placement_event]  plc on plc.id_plcmnt_evnt=5
-					where  cd_srvc=2
+					where  cd_srvc=2;
 
 
 
@@ -173,7 +173,7 @@
 					set id_plcmnt_evnt=plc.id_plcmnt_evnt 
 					from portal_redux.rptPlacement_Events R
 					join portal_redux.[ref_lookup_placement_event]  plc on plc.id_plcmnt_evnt=12
-					where  cd_srvc in (405,1768)
+					where  cd_srvc in (405,1768);
 
 
 
@@ -182,7 +182,7 @@
 					set id_plcmnt_evnt=plc.id_plcmnt_evnt 
 					from portal_redux.rptPlacement_Events R
 					join portal_redux.[ref_lookup_placement_event]  plc on plc.id_plcmnt_evnt=7
-					where  cd_srvc in (1776,1777)
+					where  cd_srvc in (1776,1777);
 
 				
 					update R
@@ -190,7 +190,7 @@
 					,prtl_cd_plcm_setng=plc.cd_plcm_setng
 					from portal_redux.rptPlacement_Events r
 					,portal_redux.ref_lookup_placement_event plc 
-					where R.id_plcmnt_evnt=plc.id_plcmnt_evnt
+					where R.id_plcmnt_evnt=plc.id_plcmnt_evnt;
 
 
 
@@ -199,13 +199,13 @@
 		set cd_race_census = pd.cd_race_census, census_Hispanic_Latino_Origin_cd=pd.census_Hispanic_Latino_Origin_cd
 		from portal_redux.PEOPLE_DIM pd 
 		where
-		pd.id_prsn=rptPlacement.child and pd.IS_CURRENT=1
+		pd.id_prsn=rptPlacement.child and pd.IS_CURRENT=1;
 
 
 		update rpt
 		set pk_gndr=g.pk_gndr
 		from portal_redux.rptPlacement rpt
-		left join portal_redux.ref_lookup_gender g on g.cd_gndr=rpt.cd_gndr
+		left join portal_redux.ref_lookup_gender g on g.cd_gndr=rpt.cd_gndr;
 
 
 		update rpt
@@ -214,7 +214,7 @@
 		from portal_redux.rptPlacement rpt
 		join (select child,count(*) as episode_count,max(removal_dt) as latest_removal_dt,min(removal_dt) as first_removal_dt
 				from portal_redux.rptPlacement rpt
-				group by child) q on q.child=rpt.child
+				group by child) q on q.child=rpt.child;
 
 
 		update rpt
@@ -223,38 +223,38 @@
 		join (select child,id_removal_episode_fact, removal_dt
 			,ROW_NUMBER() over (partition by child order by removal_dt,discharge_dt) as child_eps_rank 
 			from portal_redux.rptPlacement
-			) epsOrder on epsOrder.id_removal_episode_fact=rpt.id_removal_episode_fact
+			) epsOrder on epsOrder.id_removal_episode_fact=rpt.id_removal_episode_fact;
 
 		update rpt
 		set next_reentry_date=nxt.removal_dt, days_to_reentry=datediff(dd,rpt.discharge_dt,nxt.removal_dt)
 		from portal_redux.rptPlacement rpt
 		join portal_redux.rptPlacement nxt on rpt.child=nxt.child and rpt.child_eps_rank + 1 = nxt.child_eps_rank
-		where rpt.child_eps_rank <> rpt.child_cnt_episodes
+		where rpt.child_eps_rank <> rpt.child_cnt_episodes;
 
 	
 		update rpt
 		set longest_id_placement_fact=q.id_placement_fact
 		from portal_redux.rptPlacement  rpt
 		join (select id_removal_episode_fact,id_placement_Fact,rptPlacement_Events.plcmnt_days,ROW_NUMBER() over (partition by id_removal_episode_fact order by plcmnt_days desc) as row_num
-			from portal_redux.rptPlacement_Events ) q on q.id_removal_episode_fact=rpt.id_removal_episode_fact and q.row_num=1
+			from portal_redux.rptPlacement_Events ) q on q.id_removal_episode_fact=rpt.id_removal_episode_fact and q.row_num=1;
 
 
 		update rpt
 		set [long_cd_plcm_setng] = prtl_cd_plcm_setng
 		from portal_redux.rptPlacement  rpt
-		join portal_redux.rptPlacement_Events pe on pe.id_placement_fact=rpt.longest_id_placement_fact
+		join portal_redux.rptPlacement_Events pe on pe.id_placement_fact=rpt.longest_id_placement_fact;
 
 
 		update rpt
 		set initial_id_placement_fact=q.id_placement_fact
 		from portal_redux.rptPlacement  rpt
 		join (select id_removal_episode_fact,id_placement_Fact,rptPlacement_Events.id_calendar_dim_begin,rptPlacement_Events.plcmnt_days , ROW_NUMBER() over (partition by id_removal_episode_fact order by id_calendar_dim_begin, rptPlacement_Events.plcmnt_days  desc) as row_num
-			from portal_redux.rptPlacement_Events ) q on q.id_removal_episode_fact=rpt.id_removal_episode_fact and q.row_num=1
+			from portal_redux.rptPlacement_Events ) q on q.id_removal_episode_fact=rpt.id_removal_episode_fact and q.row_num=1;
 
 		update rpt
 		set  [init_cd_plcm_setng]= prtl_cd_plcm_setng
 		from portal_redux.rptPlacement  rpt
-		join portal_redux.rptPlacement_Events pe on pe.id_placement_fact=rpt.initial_id_placement_fact
+		join portal_redux.rptPlacement_Events pe on pe.id_placement_fact=rpt.initial_id_placement_fact;
 
 
 		update rpt
@@ -280,12 +280,12 @@
 							and dateadd(yy,18,birthdate) < (select cutoff_date from portal_redux.ref_last_dw_transfer)
 												and  rpt.discharge_dt > getdate()
 												and dateadd(yy,18,birthdate) >=removal_dt
-			left join portal_redux.ref_state_discharge_xwalk xSC on xSC.state_discharge_reason_code=-99 -- still in care
+			left join portal_redux.ref_state_discharge_xwalk xSC on xSC.state_discharge_reason_code=-99 ;-- still in care
 
 
 			update rpt
 			set dur_days=iif(discharge_dt <= cutoff_date ,  datediff(dd,removal_dt,discharge_dt) + 1,datediff(dd,removal_dt,cutoff_date) + 1)
-			from portal_redux.rptPlacement rpt,ref_last_dw_transfer
+			from portal_redux.rptPlacement rpt,ref_last_dw_transfer;
 
 		update rpt
 		set max_bin_los_cd=q.max_bin_los_cd
@@ -294,12 +294,12 @@
 				from portal_redux.rptPlacement rpt
 				join portal_redux.[ref_filter_los] on  rpt.dur_days between dur_days_from and dur_days_thru
 					group by id_removal_episode_Fact) q
-					on q.id_removal_episode_fact=rpt.id_removal_episode_fact
+					on q.id_removal_episode_fact=rpt.id_removal_episode_fact;
 
 	
 		update TCE
 		set dependency_dt= null , fl_dep_exist= 0
-		from portal_redux.rptPlacement TCE
+		from portal_redux.rptPlacement TCE;
 
 		update TCE
 		set dependency_dt=q.eff_date,fl_dep_exist=1
@@ -321,7 +321,7 @@
 									and dateadd(dd,79,aoc.petition_date) < isnull(tce.discharge_dt,(select cutoff_date from portal_redux.ref_last_dw_transfer))
 						and petition ='DEPENDENCY PETITION' 
 				) q on q.id_removal_episode_fact=tce.id_removal_episode_fact  
-					and q.row_num=1
+					and q.row_num=1;
 		-- update those with same child 
 		-- , same dependency date keeping the smallest date difference from removal
 		--  for dependency date
@@ -357,13 +357,13 @@
 
 			update rpt
 			set bin_dep_cd=  null
-			from portal_redux.rptPlacement rpt
+			from portal_redux.rptPlacement rpt;
 
 
 			update portal_redux.rptPlacement
 		set dependency_dt=null,fl_dep_exist=0
 		from portal_redux.rptPlacement 
-		where fl_dep_exist=1 and bin_dep_cd is null and dependency_dt < removal_dt
+		where fl_dep_exist=1 and bin_dep_cd is null and dependency_dt < removal_dt;
 
 	
 			update rpt
@@ -372,7 +372,7 @@
 				join portal_redux.[ref_filter_dependency] ref
 			on  coalesce(dependency_dt,removal_dt) between dateadd(dd,diff_days_from,removal_dt)
 					and dateadd(dd,diff_days_thru,removal_dt)
-					and ref.fl_dep_exist=rpt.fl_dep_exist and rpt.bin_dep_cd is null
+					and ref.fl_dep_exist=rpt.fl_dep_exist and rpt.bin_dep_cd is null;
 
 
 
@@ -395,7 +395,7 @@
 				 when portal_redux.fnc_datediff_mos(removal_dt,discharge_dt) < 45 then 45
 				 when portal_redux.fnc_datediff_mos(removal_dt,discharge_dt) < 48 then 48
 			end
-		from   portal_redux.rptPlacement tce
+		from   portal_redux.rptPlacement tce;
 
 		
 		update tce
@@ -417,7 +417,7 @@
 				 when portal_redux.fnc_datediff_mos(discharge_dt,next_reentry_date) < 45 then 45
 				 when portal_redux.fnc_datediff_mos(discharge_dt,next_reentry_date) < 48 then 48
 			end
-			from   portal_redux.rptPlacement tce
+			from   portal_redux.rptPlacement tce;
 
 
 
@@ -427,7 +427,7 @@
  join (select e.id_removal_episode_fact,count(distinct e.id_placement_fact) as cnt_events
 		from portal_redux.rptPlacement_Events  e
 		group by e.id_removal_episode_fact
-		) q on q.id_removal_episode_fact=rpt.id_removal_episode_fact
+		) q on q.id_removal_episode_fact=rpt.id_removal_episode_fact;
 
  update rpt
  set  nbr_ooh_events= cnt_events
@@ -436,21 +436,21 @@
 		from portal_redux.rptPlacement_Events  e
 		where CD_EPSD_TYPE=1
 		group by e.id_removal_episode_fact
-		) q on q.id_removal_episode_fact=rpt.id_removal_episode_fact
+		) q on q.id_removal_episode_fact=rpt.id_removal_episode_fact;
 		
 
 update portal_redux.rptPlacement 
 set bin_placement_cd= ref.bin_placement_cd
 from portal_redux.ref_filter_nbr_placement ref
 where nbr_ooh_events between ref.nbr_placement_from and ref.nbr_placement_thru
-and ref.bin_placement_cd <>0
+and ref.bin_placement_cd <>0;
 
 update portal_redux.rptPlacement 
 set bin_placement_cd= ref.bin_placement_cd
 from portal_redux.ref_filter_nbr_placement ref
 where nbr_events between ref.nbr_placement_from and ref.nbr_placement_thru
 and rptPlacement.bin_placement_cd = 0
-and ref.bin_placement_cd <>0
+and ref.bin_placement_cd <>0;
 
 
 update portal_redux.procedure_flow

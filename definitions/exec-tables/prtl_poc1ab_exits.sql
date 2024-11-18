@@ -1,0 +1,38 @@
+-- recreate prtl_poc1ab_exits table
+
+DROP TABLE IF EXISTS portal_redux.prtl_poc1ab_exits;
+CREATE TABLE portal_redux.prtl_poc1ab_exits (
+	qry_type							INT			NOT NULL,
+	date_type							INT			NOT NULL,
+	start_date							DATETIME	NOT NULL,
+	bin_dep_cd							INT			NOT NULL,
+	max_bin_los_cd						INT			NOT NULL,
+	bin_placement_cd					INT			NOT NULL,
+	bin_ihs_svc_cd						INT			NOT NULL,
+	cd_reporter_type					INT			NOT NULL,
+	age_grouping_cd						INT			NULL,
+	cd_race								INT			NULL,
+	census_hispanic_latino_origin_cd	INT			NOT NULL,
+	pk_gndr								INT			NOT NULL,
+	init_cd_plcm_setng					INT			NULL,
+	long_cd_plcm_setng					INT			NULL,
+	county_cd							INT			NULL,
+	int_match_param_key					BIGINT		NOT NULL,
+	cd_discharge_type					INT			NOT NULL,
+	cnt_exits							INT			NOT NULL,
+	filter_allegation					INT			NOT NULL,
+	filter_finding						INT			NOT NULL,
+	filter_access_type					INT			NOT NULL,
+	start_year							INT			NULL,
+	CONSTRAINT prtl_ooh_exits_bin_dep_cd_fk FOREIGN KEY (bin_dep_cd) REFERENCES portal_redux.ref_filter_dependency(bin_dep_cd),
+	CONSTRAINT prtl_ooh_exits_bin_ihs_svc_cd_fk FOREIGN KEY (bin_ihs_svc_cd) REFERENCES portal_redux.ref_filter_ihs_services(bin_ihs_svc_cd),
+	CONSTRAINT prtl_ooh_exits_bin_placement_cd_fk FOREIGN KEY (bin_placement_cd) REFERENCES portal_redux.ref_filter_nbr_placement(bin_placement_cd),
+	CONSTRAINT prtl_ooh_exits_cd_race_fk FOREIGN KEY (cd_race) REFERENCES portal_redux.ref_lookup_ethnicity_census(cd_race_census),
+	CONSTRAINT prtl_ooh_exits_cd_reporter_type_fk FOREIGN KEY (cd_reporter_type) REFERENCES portal_redux.ref_filter_reporter_type(cd_reporter_type),
+	CONSTRAINT prtl_ooh_exits_county_cd_fk FOREIGN KEY (county_cd) REFERENCES portal_redux.ref_lookup_county(county_cd),
+	CONSTRAINT prtl_ooh_exits_init_cd_plcm_setng_fk FOREIGN KEY (init_cd_plcm_setng) REFERENCES portal_redux.ref_lookup_plcmnt(cd_plcm_setng),
+	CONSTRAINT prtl_ooh_exits_long_cd_plcm_setng_fk FOREIGN KEY (long_cd_plcm_setng) REFERENCES portal_redux.ref_lookup_plcmnt(cd_plcm_setng),
+	CONSTRAINT prtl_ooh_exits_max_bin_los_cd_fk FOREIGN KEY (max_bin_los_cd) REFERENCES portal_redux.ref_filter_los(bin_los_cd),
+	CONSTRAINT prtl_ooh_exits_origin_cd_fk FOREIGN KEY (census_hispanic_latino_origin_cd) REFERENCES portal_redux.ref_lookup_hispanic_latino_census(census_hispanic_latino_origin_cd),
+	CONSTRAINT prtl_ooh_exits_pk_gndr_fk FOREIGN KEY (pk_gndr) REFERENCES portal_redux.ref_lookup_gender(pk_gndr)
+);

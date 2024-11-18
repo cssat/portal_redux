@@ -1,49 +1,44 @@
--- create ALLEGATION_FACT table
+-- recreate ALLEGATION_FACT table
 
--- DROP TABLE portal_redux.ALLEGATION_FACT;
+DROP TABLE IF EXISTS portal_redux.ALLEGATION_FACT;
 CREATE TABLE portal_redux.ALLEGATION_FACT (
-	ID_ALLEGATION_FACT int NOT NULL,
-	ID_ALGT int NULL,
-	ID_CPS int NULL,
-	ID_INTAKE_FACT int NULL,
-	ID_INVESTIGATION_ASSESSMENT_FACT int NULL,
-	ID_ABUSE_TYPE_DIM int NULL,
-	ID_CASE_DIM int NULL,
-	ID_FINDINGS_DIM int NULL,
-	ID_PEOPLE_DIM_SUBJECT int NULL,
-	ID_PEOPLE_DIM_VICTIM int NULL,
-	ID_RELATIONSHIP_DIM int NULL,
-	FL_FATALITY tinyint NULL,
-	FL_FATALITY_INVS tinyint NULL,
-	FL_INVS tinyint NULL,
-	CHILD_AGE tinyint NULL,
-	FL_EXPUNGED char(1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-	ID_PRSN_SUBJECT int NULL,
-	ID_PRSN_VICTIM int NULL,
-	ID_CASE int NULL,
-	CONSTRAINT PK_ID_ALLEGATION_FACT PRIMARY KEY (ID_ALLEGATION_FACT),
-	CONSTRAINT fk_ALLEGATION_FACT_ID_ABUSE_TYPE_DIM FOREIGN KEY (ID_ABUSE_TYPE_DIM) REFERENCES portal_redux.ABUSE_TYPE_DIM(ID_ABUSE_TYPE_DIM),
-	CONSTRAINT fk_ALLEGATION_FACT_ID_CASE_DIM FOREIGN KEY (ID_CASE_DIM) REFERENCES portal_redux.CASE_DIM(ID_CASE_DIM),
-	CONSTRAINT fk_ALLEGATION_FACT_ID_FINDINGS_DIM FOREIGN KEY (ID_FINDINGS_DIM) REFERENCES portal_redux.FINDINGS_DIM(ID_FINDINGS_DIM),
-	CONSTRAINT fk_ALLEGATION_FACT_ID_INTAKE_FACT FOREIGN KEY (ID_INTAKE_FACT) REFERENCES portal_redux.INTAKE_FACT(ID_INTAKE_FACT),
-	CONSTRAINT fk_ALLEGATION_FACT_ID_INVESTIGATION_ASSESSMENT_FACT FOREIGN KEY (ID_INVESTIGATION_ASSESSMENT_FACT) REFERENCES portal_redux.INVESTIGATION_ASSESSMENT_FACT(ID_INVESTIGATION_ASSESSMENT_FACT),
-	CONSTRAINT fk_ALLEGATION_FACT_ID_PEOPLE_DIM_SUBJECT FOREIGN KEY (ID_PEOPLE_DIM_SUBJECT) REFERENCES portal_redux.PEOPLE_DIM(ID_PEOPLE_DIM),
-	CONSTRAINT fk_ALLEGATION_FACT_ID_RELATIONSHIP_DIM FOREIGN KEY (ID_RELATIONSHIP_DIM) REFERENCES portal_redux.RELATIONSHIP_DIM(ID_RELATIONSHIP_DIM)
+	id_allegation_fact					INT			NOT NULL,
+	id_algt								INT			NULL,
+	id_cps								INT			NULL,
+	id_intake_fact						INT			NULL,
+	id_investigation_assessment_fact	INT			NULL,
+	id_abuse_type_dim					INT			NULL,
+	id_case_dim							INT			NULL,
+	id_findings_dim						INT			NULL,
+	id_people_dim_subject				INT			NULL,
+	id_people_dim_victim				INT			NULL,
+	id_relationship_dim					INT			NULL,
+	fl_fatality							TINYINT		NULL,
+	fl_fatality_invs					TINYINT		NULL,
+	fl_invs								TINYINT		NULL,
+	child_age							TINYINT		NULL,
+	fl_expunged							CHAR(1)		COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	id_prsn_subject						INT			NULL,
+	id_prsn_victim						INT			NULL,
+	id_case								INT			NULL,
+	CONSTRAINT pk_id_allegation_fact PRIMARY KEY (id_allegation_fact),
+	CONSTRAINT fk_allegation_fact_id_abuse_type_dim					FOREIGN KEY (id_abuse_type_dim)
+			REFERENCES portal_redux.ABUSE_TYPE_DIM (id_abuse_type_dim),
+	CONSTRAINT fk_allegation_fact_id_case_dim						FOREIGN KEY (id_case_dim)
+			REFERENCES portal_redux.CASE_DIM (id_case_dim),
+	CONSTRAINT fk_allegation_fact_id_findings_dim					FOREIGN KEY (id_findings_dim)
+			REFERENCES portal_redux.FINDINGS_DIM (id_findings_dim),
+	CONSTRAINT fk_allegation_fact_id_intake_fact					FOREIGN KEY (id_intake_fact)
+			REFERENCES portal_redux.INTAKE_FACT (id_intake_fact),
+	CONSTRAINT fk_allegation_fact_id_investigation_assessment_fact	FOREIGN KEY (id_investigation_assessment_fact)
+			REFERENCES portal_redux.INVESTIGATION_ASSESSMENT_FACT (id_investigation_assessment_fact),
+	CONSTRAINT fk_allegation_fact_id_people_dim_subject				FOREIGN KEY (id_people_dim_subject)
+			REFERENCES portal_redux.PEOPLE_DIM (id_people_dim),
+	CONSTRAINT fk_allegation_fact_id_relationship_dim				FOREIGN KEY (id_relationship_dim)
+			REFERENCES portal_redux.RELATIONSHIP_DIM (id_relationship_dim)
 );
-CREATE NONCLUSTERED INDEX idx_id_cps_victim ON portal_redux.ALLEGATION_FACT (  ID_CPS ASC  , ID_PEOPLE_DIM_VICTIM ASC  )  
-	INCLUDE ( ID_ABUSE_TYPE_DIM , ID_PRSN_VICTIM , ID_RELATIONSHIP_DIM ) 
-	WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
-	ON [PRIMARY];
-CREATE NONCLUSTERED INDEX idx_id_intake_fact ON portal_redux.ALLEGATION_FACT (  ID_INTAKE_FACT ASC  )  
-	WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
-	ON [PRIMARY];
-
--- load table data
-
-BULK INSERT portal_redux.ALLEGATION_FACT
-FROM 'D:\S3\fldw-in\ALLEGATION_FACT.txt'
-WITH (
-    firstrow = 2,
-    fieldterminator = '|',
-    rowterminator = '\n'
-);
+CREATE NONCLUSTERED INDEX idx_id_cps_victim ON portal_redux.ALLEGATION_FACT (id_cps ASC, id_people_dim_victim ASC)  
+	INCLUDE (id_abuse_type_dim, id_prsn_victim, id_relationship_dim)
+	WITH (PAD_INDEX = OFF, FILLFACTOR = 100, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, STATISTICS_NORECOMPUTE = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY];
+CREATE NONCLUSTERED INDEX idx_id_intake_fact ON portal_redux.ALLEGATION_FACT (id_intake_fact ASC)  
+	WITH (PAD_INDEX = OFF, FILLFACTOR = 100, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, STATISTICS_NORECOMPUTE = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY];

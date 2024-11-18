@@ -1,29 +1,19 @@
--- create ASSIGNMENT_ATTRIBUTE_DIM table
+-- recreate ASSIGNMENT_ATTRIBUTE_DIM table
 
--- DROP TABLE portal_redux.ASSIGNMENT_ATTRIBUTE_DIM;
+DROP TABLE IF EXISTS portal_redux.ASSIGNMENT_ATTRIBUTE_DIM;
 CREATE TABLE portal_redux.ASSIGNMENT_ATTRIBUTE_DIM (
-	ID_ASSIGNMENT_ATTRIBUTE_DIM int NOT NULL,
-	CD_ASGN_CTGRY int NULL,
-	TX_ASGN_CTGRY varchar(200) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-	CD_ASGN_ROLE int NULL,
-	TX_ASGN_ROLE varchar(200) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-	CD_ASGN_RSPNS int NULL,
-	TX_ASGN_RSPNS varchar(200) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-	CD_ASGN_TYPE int NULL,
-	TX_ASGN_TYPE varchar(200) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-	DT_ROW_BEGIN datetime NULL,
-	DT_ROW_END datetime NULL,
-	ID_CYCLE int NULL,
-	IS_CURRENT int NULL,
-	CONSTRAINT PK_ID_ASSIGNMENT_ATTRIBUTE_DIM PRIMARY KEY (ID_ASSIGNMENT_ATTRIBUTE_DIM)
-);
-
--- load table data
-
-BULK INSERT portal_redux.ASSIGNMENT_ATTRIBUTE_DIM
-FROM 'D:\S3\fldw-in\ASSIGNMENT_ATTRIBUTE_DIM.txt'
-WITH (
-    firstrow = 2,
-    fieldterminator = '|',
-    rowterminator = '\n'
+	id_assignment_attribute_dim		INT				NOT	NULL,
+	cd_asgn_ctgry					INT				NULL,
+	tx_asgn_ctgry					VARCHAR(200)	COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	cd_asgn_role					INT				NULL,
+	tx_asgn_role					VARCHAR(200)	COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	cd_asgn_RSPNS					INT				NULL,
+	tx_asgn_RSPNS					VARCHAR(200)	COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	cd_asgn_type					INT				NULL,
+	tx_asgn_type					VARCHAR(200)	COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	dt_row_begin					DATETIME		NULL,
+	dt_row_end						DATETIME		NULL,
+	id_cycle						INT				NULL,
+	is_current						INT				NULL,
+	CONSTRAINT pk_id_assignment_attribute_dim PRIMARY KEY (id_assignment_attribute_dim)
 );

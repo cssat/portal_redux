@@ -24,6 +24,25 @@ as
  set nocount on
  
  
+	/*   --  for qa only
+ declare  @date varchar(3000)='2000-01-01,2013-01-01'
+declare  @age_grouping_cd varchar(30)='0'
+declare  @race_cd varchar(30)='1'
+declare  @gender_cd varchar(10)='0'
+declare  @init_cd_plcm_setng varchar(30)='0'
+declare  @long_cd_plcm_setng varchar(30)= '0'
+declare  @county_cd varchar(200)= '0'
+declare  @bin_los_cd varchar(30)= '0'
+declare  @bin_placement_cd varchar(30)= '0'
+declare  @bin_ihs_svc_cd varchar(30)= '0'
+declare  @cd_reporter_type varchar(100)= '0'
+declare  @filter_access_type varchar(30)= '0'
+declare  @filter_allegation  varchar(30)= '0'
+declare @filter_finding varchar(30)= '0'
+declare @bin_dep_cd varchar(20)= '0'
+DECLARE @fl_return_results SMALLINT = 1 */
+
+
        declare @qry_id bigint;
     declare @mindate datetime;
     declare @maxdate datetime;

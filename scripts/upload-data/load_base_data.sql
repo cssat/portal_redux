@@ -533,6 +533,15 @@ WITH (
 );
 
 
+TRUNCATE TABLE portal_redux.POC_Table_Counts;
+BULK INSERT portal_redux.POC_Table_Counts
+FROM 'D:\S3\fldw-in\poc_table_counts.txt'
+WITH (
+    firstrow = 2,
+    fieldterminator = '|',
+    rowterminator = '\n'
+);
+
 
 TRUNCATE TABLE portal_redux.PRIMARY_ASSIGNMENT_FACT;
 BULK INSERT portal_redux.PRIMARY_ASSIGNMENT_FACT

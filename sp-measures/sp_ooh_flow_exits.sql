@@ -528,7 +528,6 @@ from (
 								,qry_id
 								,start_year
 								,fl_include_perCapita)
-								
 						SELECT    prtl_poc1ab_exits.qry_type
 								, prtl_poc1ab_exits.date_type 
 								, prtl_poc1ab_exits.[start_date]

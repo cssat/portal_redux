@@ -1,46 +1,47 @@
--- create ABUSE_FACT table
+-- recreate ABUSE_FACT table
 
--- DROP TABLE portal_redux.ABUSE_FACT;
+DROP TABLE IF EXISTS portal_redux.ABUSE_FACT;
 CREATE TABLE portal_redux.ABUSE_FACT (
-	ID_ABUSE_FACT int NOT NULL,
-	ID_CPS int NULL,
-	ID_PRSN_VCTM int NULL,
-	ID_CALENDAR_DIM_FOUNDED int NULL,
-	ID_CALENDAR_DIM_INCIDENT int NULL,
-	ID_CALENDAR_DIM_REFERRED int NULL,
-	ID_CASE_DIM int NULL,
-	ID_LOCATION_DIM_INCIDENT int NULL,
-	ID_LOCATION_DIM_INTAKE_WORKER int NULL,
-	ID_LOCATION_DIM_INVESTIGATION_WORKER int NULL,
-	ID_LOCATION_DIM_PRIMARY_WORKER int NULL,
-	ID_PEOPLE_DIM_VICTIM int NULL,
-	ID_PLACEMENT_TYPE_DIM int NULL,
-	ID_PROVIDER_DIM int NULL,
-	ID_WORKER_DIM_PRIMARY int NULL,
-	CHILD_AGE tinyint NULL,
-	FL_EXPUNGED char(1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-	ID_CASE int NULL,
-	ID_PRVD_ORG int NULL,
-	CONSTRAINT PK_ID_ABUSE_FACT PRIMARY KEY (ID_ABUSE_FACT),
-	CONSTRAINT fk_ID_CALENDAR_DIM_INCIDENT FOREIGN KEY (ID_CALENDAR_DIM_INCIDENT) REFERENCES portal_redux.CALENDAR_DIM(ID_CALENDAR_DIM),
-	CONSTRAINT fk_ID_CALENDAR_DIM_REFERRED FOREIGN KEY (ID_CALENDAR_DIM_REFERRED) REFERENCES portal_redux.CALENDAR_DIM(ID_CALENDAR_DIM),
-	CONSTRAINT fk_ID_CASE_DIM FOREIGN KEY (ID_CASE_DIM) REFERENCES portal_redux.CASE_DIM(ID_CASE_DIM),
-	CONSTRAINT fk_ID_LOCATION_DIM_INCIDENT FOREIGN KEY (ID_LOCATION_DIM_INCIDENT) REFERENCES portal_redux.LOCATION_DIM(ID_LOCATION_DIM),
-	CONSTRAINT fk_ID_LOCATION_DIM_INTAKE_WORKER FOREIGN KEY (ID_LOCATION_DIM_INTAKE_WORKER) REFERENCES portal_redux.LOCATION_DIM(ID_LOCATION_DIM),
-	CONSTRAINT fk_ID_LOCATION_DIM_PRIMARY_WORKER FOREIGN KEY (ID_LOCATION_DIM_PRIMARY_WORKER) REFERENCES portal_redux.LOCATION_DIM(ID_LOCATION_DIM),
-	CONSTRAINT fk_ID_PEOPLE_DIM_VICTIM FOREIGN KEY (ID_PEOPLE_DIM_VICTIM) REFERENCES portal_redux.PEOPLE_DIM(ID_PEOPLE_DIM),
-	CONSTRAINT fk_ID_PLACEMENT_TYPE_DIM FOREIGN KEY (ID_PLACEMENT_TYPE_DIM) REFERENCES portal_redux.PLACEMENT_TYPE_DIM(ID_PLACEMENT_TYPE_DIM),
-	CONSTRAINT fk_ID_PROVIDER_DIM FOREIGN KEY (ID_PROVIDER_DIM) REFERENCES portal_redux.PROVIDER_DIM(ID_PROVIDER_DIM),
-	CONSTRAINT fk_ID_WORKER_DIM_PRIMARY FOREIGN KEY (ID_WORKER_DIM_PRIMARY) REFERENCES portal_redux.WORKER_DIM(ID_WORKER_DIM),
-	CONSTRAINT fk_id_calendar_dim_founded FOREIGN KEY (ID_CALENDAR_DIM_FOUNDED) REFERENCES portal_redux.CALENDAR_DIM(ID_CALENDAR_DIM)
-);
-
--- load table data
-
-BULK INSERT portal_redux.ABUSE_FACT
-FROM 'D:\S3\fldw-in\ABUSE_FACT.txt'
-WITH (
-    firstrow = 2,
-    fieldterminator = '|',
-    rowterminator = '\n'
+	id_abuse_fact 							INT			NOT NULL,
+	id_cps 									INT			NULL,
+	id_prsn_vctm 							INT			NULL,
+	id_calendar_dim_founded					INT			NULL,
+	id_calendar_dim_incident 				INT			NULL,
+	id_calendar_dim_referred 				INT			NULL,
+	id_case_dim 							INT			NULL,
+	id_location_dim_incident 				INT			NULL,
+	id_location_dim_intake_worker 			INT			NULL,
+	id_location_dim_investigation_worker	INT			NULL,
+	id_location_dim_primary_worker 			INT			NULL,
+	id_people_dim_victim 					INT			NULL,
+	id_placement_type_dim 					INT			NULL,
+	id_provider_dim 						INT			NULL,
+	id_worker_dim_primary 					INT 		NULL,
+	child_age 								TINYINT		NULL,
+	fl_expunged 							CHAR(1)		COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	id_case 								INT			NULL,
+	id_prvd_org 							INT			NULL,
+	CONSTRAINT pk_id_abuse_fact PRIMARY KEY (id_abuse_fact),
+	CONSTRAINT fk_id_calendar_dim_founded			FOREIGN KEY (id_calendar_dim_founded)
+			REFERENCES portal_redux.CALENDAR_DIM (id_calendar_dim),
+	CONSTRAINT fk_id_calendar_dim_incident			FOREIGN KEY (id_calendar_dim_incident)
+			REFERENCES portal_redux.CALENDAR_DIM (id_calendar_dim),
+	CONSTRAINT fk_id_calendar_dim_referred			FOREIGN KEY (id_calendar_dim_referred)
+			REFERENCES portal_redux.CALENDAR_DIM (id_calendar_dim),
+	CONSTRAINT fk_id_case_dim						FOREIGN KEY (id_case_dim)
+			REFERENCES portal_redux.CASE_DIM (id_case_dim),
+	CONSTRAINT fk_id_location_dim_incident			FOREIGN KEY (id_location_dim_incident)
+			REFERENCES portal_redux.LOCATION_DIM (id_location_dim),
+	CONSTRAINT fk_id_location_dim_intake_worker		FOREIGN KEY (id_location_dim_intake_worker)
+			REFERENCES portal_redux.LOCATION_DIM (id_location_dim),
+	CONSTRAINT fk_id_location_dim_primary_worker	FOREIGN KEY (id_location_dim_primary_worker)
+			REFERENCES portal_redux.LOCATION_DIM (id_location_dim),
+	CONSTRAINT fk_id_people_dim_victim				FOREIGN KEY (id_people_dim_victim)
+			REFERENCES portal_redux.PEOPLE_DIM (id_people_dim),
+	CONSTRAINT fk_id_placement_type_dim				FOREIGN KEY (id_placement_type_dim)
+			REFERENCES portal_redux.PLACEMENT_TYPE_DIM (id_placement_type_dim),
+	CONSTRAINT id_provider_dim						FOREIGN KEY (id_provider_dim)
+			REFERENCES portal_redux.PROVIDER_DIM (id_provider_dim),
+	CONSTRAINT fk_id_worker_dim_primary				FOREIGN KEY (id_worker_dim_primary)
+			REFERENCES portal_redux.WORKER_DIM (id_worker_dim)
 );
