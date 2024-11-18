@@ -1,15 +1,18 @@
--- loads data files from s3 dcyf-fldw-in to ca_ods D drive
+-- loads data files from s3 dcyf-fldw-in to ca_ods D: drive
 -- 76 files in total
 
 -- **BEFORE RUNNING**: folders are labeled by quarter
--- 		find & replace all '2024-Q3' with current year & quarter in below statements
+-- 	find & replace all '2024-Q3' with current year & quarter in below statements
 
--- 		run to review tasks
+--		run to view task progress
+-- SELECT * FROM msdb.dbo.rds_fn_task_status(NULL,0);
+
+-- 		run to view files in the D: drive
 -- EXEC msdb.dbo.rds_gather_file_details;
 --		(task number will be returned)
 --
 -- SELECT * FROM msdb.dbo.rds_fn_list_file_details( *task number here* );
---  	(takes at least ~2 hr before showing results)
+
 
 
 EXEC msdb.dbo.rds_download_from_s3

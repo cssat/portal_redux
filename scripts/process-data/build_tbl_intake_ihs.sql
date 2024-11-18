@@ -1,3 +1,4 @@
+-- build_tbl_intake_ihs
 -- first set of procedures
 
 EXEC portal_redux.load_update_people_dim_cd_race_census;
