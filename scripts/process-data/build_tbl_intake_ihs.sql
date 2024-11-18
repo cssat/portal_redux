@@ -1,0 +1,13 @@
+-- build_tbl_intake_ihs
+-- first set of procedures
+
+EXEC portal_redux.load_update_people_dim_cd_race_census;
+EXEC portal_redux.prod_update_rptPlacement_after_CA_LOAD;
+EXEC portal_redux.prod_build_tbl_case_dim;
+EXEC portal_redux.prod_build_tbl_intakes;
+EXEC portal_redux.prod_update_rptPlacement_with_intakes;
+EXEC portal_redux.prod_update_tbl_intakes;
+EXEC portal_redux.prod_build_tbl_intake_grouper;
+EXEC portal_redux.prod_build_tbls_ihs_episode_services;
+EXEC portal_redux.prod_update_tbl_intakes_after_ihs;
+EXEC portal_redux.prod_update_rptPlacement_after_ihs;

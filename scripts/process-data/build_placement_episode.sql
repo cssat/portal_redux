@@ -1,0 +1,10 @@
+-- build_placement_episode
+-- second set of procedures
+
+EXEC portal_redux.prod_build_WRK_NonDCFS;
+EXEC portal_redux.prod_build_WRK_TRHEvents;
+EXEC portal_redux.prod_build_placement_payment_services;
+EXEC portal_redux.prod_build_episode_payment_services;
+EXEC portal_redux.prod_build_placement_care_days_mobility;
+EXEC portal_redux.prod_build_episode_care_days;
+EXEC portal_redux.prod_update_rptPlacement_after_basetables;

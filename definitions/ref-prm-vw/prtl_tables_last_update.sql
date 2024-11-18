@@ -1,0 +1,70 @@
+-- recreate prtl_tables_last_update table
+DROP TABLE IF EXISTS portal_redux.prtl_tables_last_update;
+CREATE TABLE portal_redux.prtl_tables_last_update (
+	tbl_id				INT					NOT NULL,
+	tbl_name			VARCHAR(50)			COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	last_build_date		DATETIME			NULL,
+	row_count			BIGINT				NULL,
+	load_time_mins		INT					NULL,
+	CONSTRAINT pk_prtl_tables_last_update PRIMARY KEY (tbl_id)
+);
+
+
+
+-- populate prtl_tables_last_update
+INSERT INTO 
+	portal_redux.prtl_tables_last_update (tbl_id, tbl_name, last_build_date, row_count, load_time_mins)
+VALUES
+	(2, 'prtl_poc2ab', NULL, NULL, NULL),
+	(3, 'prtl_poc3ab', NULL, NULL, NULL),
+	(4, 'prtl_outcomes', NULL, NULL, NULL),
+	(5, 'prtl_pbcp5', NULL, NULL, NULL),
+	(6, 'prtl_pbcs2', NULL, NULL, NULL),
+	(7, 'prtl_pbcs3', NULL, NULL, NULL),
+	(10, 'cache_poc1ab_aggr', NULL, NULL, NULL),
+	(11, 'cache_poc1ab_params', NULL, NULL, NULL),
+	(12, 'cache_qry_param_poc1ab', NULL, NULL, NULL),
+	(13, 'cache_poc2ab_aggr', NULL, NULL, NULL),
+	(14, 'cache_poc2ab_params', NULL, NULL, NULL),
+	(15, 'cache_qry_param_poc2ab', NULL, NULL, NULL),
+	(16, 'cache_poc3ab_aggr', NULL, NULL, NULL),
+	(17, 'cache_poc3ab_params', NULL, NULL, NULL),
+	(18, 'cache_qry_param_poc3ab', NULL, NULL, NULL),
+	(19, 'cache_outcomes_aggr', NULL, NULL, NULL),
+	(20, 'cache_outcomes_params', NULL, NULL, NULL),
+	(21, 'cache_qry_param_outcomes', NULL, NULL, NULL),
+	(22, 'cache_pbcp5_aggr', NULL, NULL, NULL),
+	(23, 'cache_pbcp5_params', NULL, NULL, NULL),
+	(24, 'cache_qry_param_pbcp5', NULL, NULL, NULL),
+	(25, 'cache_pbcw3_aggr', NULL, NULL, NULL),
+	(26, 'cache_pbcw3_params', NULL, NULL, NULL),
+	(27, 'cache_qry_param_pbcw3', NULL, NULL, NULL),
+	(28, 'cache_pbcw4_aggr', NULL, NULL, NULL),
+	(29, 'cache_pbcw4_params', NULL, NULL, NULL),
+	(30, 'cache_qry_param_pbcw4', NULL, NULL, NULL),
+	(31, 'cache_pbcs3_aggr', NULL, NULL, NULL),
+	(32, 'cache_pbcs3_params', NULL, NULL, NULL),
+	(33, 'cache_qry_param_pbcs3', NULL, NULL, NULL),
+	(34, 'cache_pbcs2_aggr', NULL, NULL, NULL),
+	(35, 'cache_pbcs2_params', NULL, NULL, NULL),
+	(36, 'cache_qry_param_pbcs2', NULL, NULL, NULL),
+	(37, 'prtl_poc1ab_entries', NULL, NULL, NULL),
+	(38, 'prtl_poc1ab_exits', NULL, NULL, NULL),
+	(39, 'ooh_dcfs_eps', NULL, NULL, NULL),
+	(40, 'cache_poc1ab_entries_aggr', NULL, NULL, NULL),
+	(41, 'cache_qry_param_poc1ab_entries', NULL, NULL, NULL),
+	(42, 'cache_poc1ab_entries_params', NULL, NULL, NULL),
+	(43, 'cache_poc1ab_exits_aggr', NULL, NULL, NULL),
+	(44, 'cache_qry_param_poc1ab_exits', NULL, NULL, NULL),
+	(45, 'cache_poc1ab_exits_params', NULL, NULL, NULL),
+	(46, 'ooh_point_in_time_child', NULL, NULL, NULL),
+	(47, 'ref_match_finding', NULL, NULL, NULL),
+	(48, 'ref_match_allegation', NULL, NULL, NULL),
+	(49, 'ref_match_srvc_type_category', NULL, NULL, NULL),
+	(50, 'ref_match_srvc_type_budget', NULL, NULL, NULL),
+	(51, 'ooh_point_in_time_measures', NULL, NULL, NULL),
+	(52, 'p_lop_1', NULL, NULL, NULL),
+	(53, 'p_los_1', NULL, NULL, NULL),
+	(54, 'p_los_2', NULL, NULL, NULL),
+	(55, 'rate_referrals', NULL, NULL, NULL),
+	(56, 'rate_referrals_screened_in', NULL, NULL, NULL);

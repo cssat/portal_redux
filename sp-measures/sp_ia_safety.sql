@@ -1,28 +1,30 @@
--- execute sp_ia_safety procedure
+-- exec statement
 EXEC portal_redux.sp_ia_safety
-	@age_grouping_cd = 0,
-	@race_cd = 0,
-	@cd_county = 0,
-	@cd_reporter_type = 0,
-	@filter_access_type = 0,
-	@filter_allegation = 0,
-	@filter_finding = 0;
+   @date = '0'
+,  @age_grouping_cd = '0'
+,  @race_cd = '0'
+,  @cd_county = '0'
+,  @cd_reporter_type = '0'
+,  @filter_access_type = '0'
+,  @filter_allegation = '0'
+, @filter_finding = '0';
 
 
--- create sp_ia_safety procedure
-
--- DROP PROCEDURE portal_redux.sp_ia_safety;
-CREATE PROCEDURE portal_redux.sp_ia_safety (
-   @age_grouping_cd varchar(30),
-   @race_cd varchar(30),
-   @cd_county varchar(1000),
-   @cd_reporter_type varchar(100),
-   @filter_access_type varchar(30),
-   @filter_allegation  varchar(30),
-   @filter_finding varchar(30),
-   @fl_return_results bit = 1 )
+CREATE PROCEDURE portal_redux.[sp_ia_safety](
+   @date varchar(3000)
+,  @age_grouping_cd varchar(30)
+,  @race_cd varchar(30)
+,  @cd_county varchar(1000)
+,  @cd_reporter_type varchar(100) 
+,  @filter_access_type varchar(30) 
+,  @filter_allegation  varchar(30)
+, @filter_finding varchar(30)
+, @fl_return_results bit = 1 )
 as
+BEGIN
  set nocount on
+
+ 
 
     declare @qry_id bigint;
     declare @mindate datetime;
@@ -31,45 +33,48 @@ as
     declare @minmonthstart datetime;
 	declare @tblqryid table(qry_id int);
 
+
 	declare @var_row_cnt_param int;
 	declare @var_row_cnt_cache int;
 
+
+
 	select  @mindate=min_date_any,@maxdate=max_date_any ,@minmonthstart=min_date_any,@maxmonthstart=max_date_any
-	from  ref_lookup_max_date where procedure_name='sp_ia_safety'
+	from  portal_redux.ref_lookup_max_date where procedure_name='sp_ia_safety'
    
 
    
-		if OBJECT_ID('tempDB..#age') is not null drop table #age;
-		create table #age(age_grouping_cd int,match_code int);
-		create index idx_age_match_code on #age(match_code);
+			if OBJECT_ID('tempDB..#age') is not null drop table #age;
+			create table #age(age_grouping_cd int,match_code int);
+			create index idx_age_match_code on #age(match_code);
 
     
-		IF OBJECT_ID('tempDB..#eth') is not null drop table #eth;  
-		CREATE TABLE #eth(cd_race int,cd_origin int,match_code int);
-		create index idx_eth_match on  #eth(match_code,cd_origin);
+			IF OBJECT_ID('tempDB..#eth') is not null drop table #eth;  
+			CREATE TABLE #eth(cd_race int,cd_origin int,match_code int);
+			create index idx_eth_match on  #eth(match_code,cd_origin);
     
 	     
-		if OBJECT_ID('tempDB..#cnty') is not null drop table #cnty;
-		create table #cnty(cd_cnty int,match_code int );
-		create index idx_cnty_match_code on #cnty(match_code);
+			if OBJECT_ID('tempDB..#cnty') is not null drop table #cnty;
+			create table #cnty(cd_cnty int,match_code int );
+			create index idx_cnty_match_code on #cnty(match_code);
   
-  		if OBJECT_ID('tempDB..#rpt') is not null drop table #rpt;
-		create table #rpt(cd_reporter_type int,match_code int  ,primary key(cd_reporter_type,match_code));
-		create index idx_reporter_match_code on #rpt(match_code)
+  			if OBJECT_ID('tempDB..#rpt') is not null drop table #rpt;
+			create table #rpt(cd_reporter_type int,match_code int  ,primary key(cd_reporter_type,match_code));
+			create index idx_reporter_match_code on #rpt(match_code)
 
-		if OBJECT_ID('tempDB..#acc') is not null drop table #acc;
-		create table #acc(cd_access_type int,match_code int  );
-		create index idx_cd_access_type on #acc(cd_access_type,match_code)
+			if OBJECT_ID('tempDB..#acc') is not null drop table #acc;
+			create table #acc(cd_access_type int,match_code int  );
+			create index idx_cd_access_type on #acc(cd_access_type,match_code)
 
-		-- allegation tables
-		if OBJECT_ID('tempDB..#alg') is not null drop table #alg;
-		create table #alg(cd_allegation  int,match_code int ,primary key(cd_allegation,match_code));
-		create index idx_algtn on #alg(match_code)
+			-- allegation tables
+			if OBJECT_ID('tempDB..#alg') is not null drop table #alg;
+			create table #alg(cd_allegation  int,match_code int ,primary key(cd_allegation,match_code));
+			create index idx_algtn on #alg(match_code)
 
-		-- finding tables
-		if OBJECT_ID('tempDB..#fnd') is not null drop table #fnd
-		create table #fnd(cd_finding int,match_code int,primary key(cd_finding,match_code));
-		create index idx_finding on #fnd(match_code)
+			-- finding tables
+			if OBJECT_ID('tempDB..#fnd') is not null drop table #fnd
+			create table #fnd(cd_finding int,match_code int,primary key(cd_finding,match_code));
+			create index idx_finding on #fnd(match_code)
 
 		
 
@@ -77,7 +82,7 @@ as
 
 		insert into #age(age_grouping_cd,match_code)
 		select cd_sib_age_grp,match_code
-		from prm_cd_sib_age_grp age
+		from portal_redux.prm_cd_sib_age_grp age
 		join portal_redux.fn_ReturnStrTableFromList(@age_grouping_cd,0) tmp on age.cd_sib_age_grp=cast(tmp.arrValue as int);
 
 
@@ -89,7 +94,7 @@ as
 	insert into #eth(cd_race,cd_origin,match_code)
 
 	select eth.cd_race,eth.cd_origin,eth.match_code
-	from prm_eth_census eth
+	from portal_redux.prm_eth_census eth
 	join [portal_redux].[fn_ReturnStrTableFromList](@race_cd,0) 
 	on cast(arrValue as int)=eth.cd_race
 
@@ -102,7 +107,7 @@ as
     
 			insert into #cnty(cd_cnty,match_code)
 			select  cnty.cd_cnty,cnty.match_code
-			from prm_cnty cnty
+			from portal_redux.prm_cnty cnty
 			join portal_redux.fn_ReturnStrTableFromList(@cd_county,0) sel on cast(sel.arrValue as int)=cnty.cd_cnty
 
 			
@@ -113,7 +118,7 @@ as
 
 	insert into #rpt(cd_reporter_type,match_code)
 	select rpt.cd_reporter_type,rpt.match_code
-	from prm_rpt rpt
+	from portal_redux.prm_rpt rpt
 	join portal_redux.fn_ReturnStrTableFromList(@cd_reporter_type,0) sel
 	on cast(sel.arrValue as int)=rpt.cd_reporter_type
 
@@ -123,7 +128,7 @@ as
 		-----------------------------------   access_type --------------------------------------
 	insert into #acc(cd_access_type,match_code)
 	select  acc.cd_access_type,acc.match_code
-	from prm_acc acc			
+	from portal_redux.prm_acc acc			
 	join portal_redux.fn_ReturnStrTableFromList(@filter_access_type,0) sel
 	on cast(sel.arrValue as int)=acc.cd_access_type
 
@@ -133,7 +138,7 @@ as
 	--  @filter_allegation	;
 	insert into #alg(cd_allegation,match_code)
 	select alg.cd_allegation,alg.match_code
-	from prm_alg alg
+	from portal_redux.prm_alg alg
 	join portal_redux.fn_ReturnStrTableFromList(@filter_allegation,0) sel
 	on cast(sel.arrValue as int)=alg.cd_allegation
 
@@ -143,7 +148,7 @@ as
 	
 	insert into #fnd(cd_finding,match_code)
 	select fnd.cd_finding,fnd.match_code
-	from prm_fnd fnd
+	from portal_redux.prm_fnd fnd
 	join portal_redux.fn_ReturnStrTableFromList(@filter_finding,0) sel
 	on cast(sel.arrValue as int)= fnd.cd_finding
 				
@@ -231,7 +236,7 @@ as
 
 
 
-			INSERT INTO [portal_redux].[cache_pbcs2_params]
+			INSERT INTO portal_redux.[cache_pbcs2_params]
 					(qry_id
 					, [age_grouping_cd]
 					,[cd_race_census]
@@ -264,7 +269,7 @@ as
 			end
 		else
 			begin
-				update [portal_redux].[cache_pbcs2_params]
+				update portal_redux.[cache_pbcs2_params]
 				set cnt_qry=cnt_qry + 1
 				where qry_id= @qry_id;
 			end
@@ -302,7 +307,7 @@ as
 			update cache
 			set in_cache=1,qry_id=pbcs2.qry_id
 			from #cachekeys cache
-			join [portal_redux].[cache_qry_param_pbcs2] pbcs2
+			join portal_redux.[cache_qry_param_pbcs2] pbcs2
 			on pbcs2.[int_all_param_key]=cache.int_hash_key
 
 
@@ -348,8 +353,8 @@ as
 								, mtch.age_grouping_cd 
 								, mtch.cd_race_census
 								, mtch.cd_cnty
-								, n.mnth as [Months]
-								, sum(IIF( q.total_families > 0 and n.mnth is not null, cnt_case , 0 ))
+								,n.mnth as [Months]
+								,sum(IIF( q.total_families > 0 and n.mnth is not null, cnt_case , 0 ))
 												/(q.total_families * 1.0000 ) * 100 [rate]
 								, @minmonthstart as minmonthstart
 								, @maxmonthstart as maxmonthstart
@@ -361,8 +366,8 @@ as
 									+  cast((acc.cd_access_type  * power(10.0,2)) as decimal(12,0))
 									+  cast((alg.cd_allegation  * power(10.0,1)) as decimal(12,0))
 									+ fnd.cd_finding as s2_int_hash_key
-								,ck.qry_id
-								,year(s2.cohort_begin_date) as cohort_year
+								, ck.qry_id
+								, year(s2.cohort_begin_date) as cohort_year
 							into #mytemp
 							FROM portal_redux.prtl_pbcs2  S2
 									join #prmlocdem mtch on mtch.int_match_param_key=s2.int_match_param_key 
@@ -398,7 +403,8 @@ as
 								, mtch.age_grouping_cd 
 								, mtch.cd_race_census
 								, mtch.cd_cnty
-								, n.mnth ,q.total_families
+								, n.mnth
+								, q.total_families
 								, ck.qry_id
 						order by s2.qry_type
 								, s2.date_type 
@@ -495,17 +501,17 @@ if @fl_return_results = 1
 								, pbcs2.cd_finding
 								, ref_fnd.tx_finding "Finding"								
 								, among_first_cmpt_rereferred as "Among first referrals, percent that are re-referred"
-        from cache_pbcs2_aggr pbcs2
+        from portal_redux.cache_pbcs2_aggr pbcs2
 		 	join #cachekeys ck on ck.int_hash_key=pbcs2.int_hash_key
 							and pbcs2.qry_id=ck.qry_id
-			join ref_lookup_ethnicity_census ref_eth on ref_eth.cd_race_census=pbcs2.cd_race
-			join ref_filter_allegation ref_alg on ref_alg.cd_allegation=pbcs2.cd_allegation
-			join ref_filter_finding ref_fnd on ref_fnd.cd_finding=pbcs2.cd_finding
-            join ref_lookup_sib_age_grp ref_age on ref_age.cd_sib_age_grp=pbcs2.cd_sib_age_grp
-			join ref_lookup_county ref_cnty on ref_cnty.county_cd=pbcs2.cd_county
-			join ref_filter_reporter_type ref_rpt on ref_rpt.cd_reporter_type=pbcs2.cd_reporter_type
-			join ref_filter_access_type ref_acc on ref_acc.cd_access_type=pbcs2.cd_access_type
-			join ref_last_dw_transfer dw on 1=1
+			join portal_redux.ref_lookup_ethnicity_census ref_eth on ref_eth.cd_race_census=pbcs2.cd_race
+			join portal_redux.ref_filter_allegation ref_alg on ref_alg.cd_allegation=pbcs2.cd_allegation
+			join portal_redux.ref_filter_finding ref_fnd on ref_fnd.cd_finding=pbcs2.cd_finding
+            join portal_redux.ref_lookup_sib_age_grp ref_age on ref_age.cd_sib_age_grp=pbcs2.cd_sib_age_grp
+			join portal_redux.ref_lookup_county ref_cnty on ref_cnty.county_cd=pbcs2.cd_county
+			join portal_redux.ref_filter_reporter_type ref_rpt on ref_rpt.cd_reporter_type=pbcs2.cd_reporter_type
+			join portal_redux.ref_filter_access_type ref_acc on ref_acc.cd_access_type=pbcs2.cd_access_type
+			join portal_redux.ref_last_dw_transfer dw on 1=1
            where dateadd(mm,12+pbcs2.[month],start_date) <= dw.cutoff_date
  						order by pbcs2.qry_type   
 -- 								, pbcs2.date_type
@@ -518,3 +524,17 @@ if @fl_return_results = 1
 								, pbcs2.cd_allegation
 								, pbcs2.cd_finding
 								, pbcs2.month;
+
+		DROP TABLE #age
+		DROP TABLE #eth
+		DROP TABLE #cnty
+		DROP TABLE #rpt
+		DROP TABLE #acc
+		DROP TABLE #alg
+		DROP TABLE #fnd
+		DROP TABLE #prmlocdem
+		DROP TABLE #cachekeys
+		--DROP TABLE #families
+		--DROP TABLE #mytemp
+
+END;
