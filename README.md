@@ -69,3 +69,58 @@ Some tables are important when dealing with bugs or errors, and some monitor the
 1. `procedure_flow` - contains execution order for procedures as well as datetime when the procedure was last ran (not all procedures are listed)
 1. `prtl_tables_last_update` - contains metadata about tables like last build date
 and row count (not all tables are listed)
+
+## list of procedures
+
+Here is a list of all procedures involved in sequential run order
+
+| run order | procedure name |
+| --------- | -------------- |
+| 1 | load_update_people_dim_cd_race_census |
+| 2 | prod_update_rptPlacement_after_CA_LOAD |
+| 3 | prod_build_tbl_case_dim |
+| 4 | prod_build_tbl_intakes |
+| 5 | prod_update_rptPlacement_with_intakes |
+| 6 | prod_update_tbl_intakes |
+| 7 | prod_build_tbl_intake_grouper |
+| 8 | prod_build_tbls_ihs_episode_services |
+| 9 | prod_update_tbl_intakes_after_ihs |
+| 10 | prod_update_rptPlacement_after_ihs |
+| 11 | prod_build_WRK_NonDCFS |
+| 12 | prod_build_WRK_TRHEvents |
+| 13 | prod_build_placement_payment_services |
+| 14 | prod_build_episode_payment_services |
+| 15 | prod_build_placement_care_days_mobility |
+| 16 | prod_build_episode_care_days |
+| 17 | prod_update_rptPlacement_after_basetables |
+| 18 | prod_update_ref_last_month_qtr_yr |
+| 19 | prod_build_match_allegation |
+| 20 | prod_build_match_finding |
+| 21 | prod_build_match_srvc_type_category |
+| 22 | prod_build_match_srvc_type_budget |
+| 23 | prod_build_ooh_dcfs_eps |
+| 24 | prod_build_ooh_point_in_time_child |
+| 25 | prod_build_prtl_outcomes |
+| 26 | prod_build_prtl_pbcp5 |
+| 27 | prod_build_prtl_pbcs2 |
+| 28 | prod_build_prtl_pbcs3 |
+| 29 | prod_build_ooh_point_in_time_measures |
+| 30 | prod_build_prtl_poc1ab_entries_exits |
+| 31 | prod_build_prtl_poc2ab |
+| 32 | prod_build_all_cache_ia_poc2ab |
+| 33 | prod_build_prtl_poc3ab |
+| 34 | prod_sp_update_ref_lookup_max_date |
+| 35 | prod_build_cache_ooh_tables |
+| 36 | prod_build_cache_pbcs2_aggr |
+| 37 | prod_build_cache_pbcs3_aggr |
+| 38 | prod_build_cache_poc2ab_aggr |
+| 39 | prod_build_cache_poc3ab_aggr |
+| 40 | prod_build_order_specific_placement_rate |
+| 41 | prod_build_rate_care_day_maltreatment |
+| 42 | prod_build_rate_referrals |
+| 43 | prod_build_rate_referrals_screened_in |
+| 44 | prod_build_rate_placement |
+| 45 | prod_build_rate_placement_order_specific |
+| 46 | prod_build_rate_referrals_order_specific |
+| 47 | prod_build_rate_referrals_screened_in_order_specific |
+| 48 | insert_ref_service_category_flag_xwalk |
