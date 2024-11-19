@@ -50,7 +50,7 @@ Here is the run order for files in `upload-data`:
 
 ## how to process data
 
-Once the data is loaded into their base tables, and the cuttoff_date has been adjusted, then the processing procedures are ready to run. There are 48 procedures grouped in six scripts. A few of these procedures may take a while to run (longer runtimes are noted).
+Once the data is loaded into their base tables, and the cuttoff_date has been adjusted, then the processing procedures are ready to run. There are 47 procedures grouped in six scripts. A few of these procedures may take a while to run (longer runtimes are noted).
 
 Here is the run order for files in `process-data`:
 
@@ -107,20 +107,18 @@ Here is a list of all procedures involved in sequential run order
 | 29 | prod_build_ooh_point_in_time_measures |
 | 30 | prod_build_prtl_poc1ab_entries_exits |
 | 31 | prod_build_prtl_poc2ab |
-| 32 | prod_build_all_cache_ia_poc2ab |
-| 33 | prod_build_prtl_poc3ab |
-| 34 | prod_sp_update_ref_lookup_max_date |
-| 35 | prod_build_cache_ooh_tables |
-| 36 | prod_build_cache_pbcs2_aggr |
-| 37 | prod_build_cache_pbcs3_aggr |
-| 38 | prod_build_cache_poc2ab_aggr |
-| 39 | prod_build_cache_poc3ab_aggr |
-| 40 | prod_build_order_specific_placement_rate |
-| 41 | prod_build_rate_care_day_maltreatment |
-| 42 | prod_build_rate_referrals |
-| 43 | prod_build_rate_referrals_screened_in |
-| 44 | prod_build_rate_placement |
-| 45 | prod_build_rate_placement_order_specific |
-| 46 | prod_build_rate_referrals_order_specific |
-| 47 | prod_build_rate_referrals_screened_in_order_specific |
-| 48 | insert_ref_service_category_flag_xwalk |
+| 32 | prod_build_prtl_poc3ab |
+| 33 | prod_sp_update_ref_lookup_max_date |
+| 34 | prod_build_cache_ooh_tables |
+| 35 | prod_build_cache_pbcs2_aggr |
+| 36 | prod_build_cache_pbcs3_aggr |
+| 37 | prod_build_cache_poc2ab_aggr |
+| 38 | prod_build_cache_poc3ab_aggr |
+| 39 | prod_build_rate_care_day_maltreatment |
+| 40 | prod_build_rate_referrals |
+| 41 | prod_build_rate_referrals_screened_in |
+| 42 | prod_build_rate_placement |
+| 43 | prod_build_rate_placement_order_specific |
+| 44 | prod_build_rate_referrals_order_specific |
+| 45 | prod_build_rate_referrals_screened_in_order_specific |
+| 46 | insert_ref_service_category_flag_xwalk |
