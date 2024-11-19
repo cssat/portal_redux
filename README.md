@@ -50,7 +50,7 @@ Here is the run order for files in `upload-data`:
 
 ## how to process data
 
-Once the data is loaded into their base tables, and the cuttoff_date has been adjusted, then the processing procedures are ready to run. There are 47 procedures grouped in six scripts. A few of these procedures may take a while to run (longer runtimes are noted).
+Once the data is loaded into their base tables, and the cuttoff_date has been adjusted, then the processing procedures are ready to run. There are 48 procedures grouped in six scripts. A few of these procedures may take a while to run (longer runtimes are noted).
 
 Here is the run order for files in `process-data`:
 
