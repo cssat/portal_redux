@@ -2,7 +2,7 @@
 
 ## background
 
-Every quarter, DCYF tranfers data to CSSAT to use for analytics. Through the processing of this data, identifying information is filtered out to provide allow safe use of the data.
+Every quarter, DCYF shares data with CSSAT to use for analytics. Through the processing of this data, identifying information is filtered out to provide allow safe use of the data.
 
 ## file structure
 
@@ -15,6 +15,7 @@ Every quarter, DCYF tranfers data to CSSAT to use for analytics. Through the pro
 |	|	| -- procedures
 |	|	| -- ref-prm-vw
 |	| -- scripts
+|   |   | -- annie
 |	|	| -- process-data
 |	|	| -- upload-data
 |	| -- sp-measures
@@ -30,6 +31,8 @@ Every quarter, DCYF tranfers data to CSSAT to use for analytics. Through the pro
 
 `ref-prm-vw` - referencial tables and views, including metadata
 
+`annie` - contains scripts to be run on the annie database. they load data into annie, copy tables to other schemas, populate cache tables
+
 `process-data` - contains series of scripts that reference a number of procedures at once. use these scripts to process data
 
 `upload-data` - contains scripts to add new datasets to database. also contains bulk loads to load tables with said data
@@ -38,7 +41,7 @@ Every quarter, DCYF tranfers data to CSSAT to use for analytics. Through the pro
 
 ## how to upload data
 
-This database is hosted on AWS RDS **legacy-ca-ods** . RDS contains a D: drive to store files, and files can be uploaded to the D: drive by first uploading unzipped files to the AWS S3 that has access to CA_ODS: **dcyf-fldw-in**. There are also zipped datasets from past quarters stored in the S3 bucket **dcyf-data-extracts**, so be sure to upload zipped files there as well.
+This database is hosted on AWS RDS **legacy-ca-ods** . RDS instances contain a D: drive to store files, and files can be uploaded to the D: drive by first uploading unzipped files to the AWS S3 that has access to CA_ODS: **dcyf-fldw-in**. There are also zipped datasets from past quarters stored in the S3 bucket **dcyf-data-extracts**, so be sure to upload zipped files there as well.
 
 Here is the run order for files in `upload-data`:
 
@@ -122,3 +125,50 @@ Here is a list of all procedures involved in sequential run order
 | 44 | prod_build_rate_referrals_order_specific |
 | 45 | prod_build_rate_referrals_screened_in_order_specific |
 | 46 | insert_ref_service_category_flag_xwalk |
+
+# annie
+
+This repo also contains scripts for annie including load scripts, transfer scripts, and data population scripts.
+
+Currently the data transfer between ca_ods and annie is handled locally, but it will be hosted through AWS after more development.
+
+Below is a list of tables that are essential for the current measures:
+
+| table name |
+| ---------- |
+| ref_last_dw_transfer |
+| ref_lookup_max_date |
+| ooh_point_in_time_measures |
+| prtl_outcomes |
+| prtl_poc1ab_entries | 
+| prtl_poc1ab_exits | 
+| prtl_poc2ab |
+| prtl_pbcs2 |
+| prtl_pbcp5 |
+| cache_outcomes_params |
+| cache_poc1ab_params |
+| cache_poc1ab_entries_params |
+| cache_poc1ab_exits_params |
+| cache_poc2ab_params |
+| cache_pbcs2_params |
+| cache_pbcw3_params |
+| cache_pbcw4_params |
+| cache_pcbp5_params |
+| cache_qry_param_outcomes |
+| cache_qry_param_poc1ab |
+| cache_qry_param_poc1ab_entries |
+| cache_qry_param_poc1ab_exits |
+| cache_qry_param_poc2ab |
+| cache_qry_param_pbcs2 |
+| cache_qry_param_pbcw3 |
+| cache_qry_param_pbcw4 |
+| cache_qry_param_pcbp5 |
+| cache_outcomes_aggr |
+| cache_poc1ab_aggr |
+| cache_poc1ab_entries_aggr |
+| cache_poc1ab_exits_aggr |
+| cache_poc2ab_aggr |
+| cache_pbcs2_aggr |
+| cache_pbcw3_aggr |
+| cache_pbcw4_aggr |
+| cache_pbcp5_aggr |

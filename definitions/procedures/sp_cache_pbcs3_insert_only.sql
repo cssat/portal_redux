@@ -1,4 +1,4 @@
-
+-- DROP PROCeDURE portal_redux.sp_cache_pbcs3_insert_only;
 CREATE PROCEDURE [portal_redux].[sp_cache_pbcs3_insert_only](
    @age_grouping_cd varchar(30)
 ,  @race_cd varchar(30)

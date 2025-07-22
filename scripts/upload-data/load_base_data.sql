@@ -280,7 +280,7 @@ WITH (
 );
 
 
-
+/*
 TRUNCATE TABLE portal_redux.INVESTIGATION_ASSESSMENT_FACT;
 BULK INSERT portal_redux.INVESTIGATION_ASSESSMENT_FACT
 FROM 'D:\S3\fldw-in\INVESTIGATION_ASSESSMENT_FACT.txt'
@@ -289,6 +289,7 @@ WITH (
     fieldterminator = '|',
     rowterminator = '\n'
 );
+*/
 
 
 
@@ -699,7 +700,7 @@ WITH (
 
 TRUNCATE TABLE portal_redux.rptPlacement;
 BULK INSERT portal_redux.rptPlacement
-FROM 'D:\S3\fldw-in\rptPlacement.txt'
+FROM 'D:\S3\fldw-in\rptPlacements.txt'
 WITH (
     firstrow = 2,
     fieldterminator = '|',

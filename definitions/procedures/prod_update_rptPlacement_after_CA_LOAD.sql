@@ -66,7 +66,7 @@ BEGIN
 	update  portal_redux.rptPlacement_events
 	set  rptPlacement_events.cd_epsd_type = ptd.cd_epsd_type
 	from portal_redux.placement_fact pf
-	join portal_redux.PLACEMENT_TYPE_DIM ptd on pf.ID_PLACEMENT_TYPE_DIM=pf.ID_PLACEMENT_TYPE_DIM
+	join portal_redux.PLACEMENT_TYPE_DIM ptd on pf.ID_PLACEMENT_TYPE_DIM=ptd.ID_PLACEMENT_TYPE_DIM
 	where pf.id_placement_fact=rptPlacement_events.id_placement_fact;
 
 	update portal_redux.rptPlacement_events
