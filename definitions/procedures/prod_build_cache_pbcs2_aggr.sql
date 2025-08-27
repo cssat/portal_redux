@@ -1,11 +1,8 @@
--- prod_build_cache_pbcs2_aggr definition
 
--- EXEC portal_redux.prod_build_cache_pbcs2_aggr;
--- DROP PROCEDURE IF EXISTS portal_redux.prod_build_cache_pbcs2_aggr;
-CREATE PROCEDURE portal_redux.prod_build_cache_pbcs2_aggr
+
+CREATE procedure portal_redux.prod_build_cache_pbcs2_aggr
 AS
-
-begin
+BEGIN
 		declare @loop int
 		declare @date varchar(50)
 		declare @qry_id bigint
@@ -23,6 +20,7 @@ begin
 		
 		--set @date= (select  concat(char(39),convert(varchar(10),min_date_any,121) ,',',convert(varchar(10),max_date_yr,121) ,char(39))
 		--						from ref_lookup_max_date where procedure_name='sp_ia_safety')
+		
 
 		truncate table portal_redux.cache_pbcs2_params;
 		truncate table portal_redux.cache_pbcs2_aggr;
@@ -33,7 +31,7 @@ begin
 		if OBJECT_ID('tempDB..#params') is not null drop table #params
 		select *
 		into #params
-		from prtl.ia_params_backup	where qry_id <=@max_qry_id;
+		from portal_redux.ia_params_backup	where qry_id <=@max_qry_id;
 
 		create index idx_params on #params(qry_id) include (age_grouping_cd,cd_race_census,cd_county,cd_reporter_type,filter_access_type,filter_allegation,filter_finding);
 
@@ -90,7 +88,4 @@ begin
 
 	  update statistics portal_redux.cache_pbcs2_params;
 	  update statistics portal_redux.cache_pbcs2_aggr;
-
-	  DROP TABLE #params;
-
 end;

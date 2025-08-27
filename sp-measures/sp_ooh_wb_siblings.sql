@@ -1,4 +1,5 @@
 -- exec statement
+EXEC portal_redux.sp_ooh_wb_siblings '2000-01-01,2014-04-01', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
 
 CREATE PROCEDURE [portal_redux].[sp_ooh_wb_siblings](
@@ -13,7 +14,7 @@ CREATE PROCEDURE [portal_redux].[sp_ooh_wb_siblings](
 ,  @bin_placement_cd varchar(30) 
 ,  @bin_ihs_svc_cd varchar(30) 
 ,  @cd_reporter_type varchar(100) 
-,  @filter_access_type varchar(30) 
+,  @filter_access_type varchar(30)
 ,  @filter_allegation  varchar(30)
 , @filter_finding varchar(30)
 ,@bin_dep_cd varchar(20)
